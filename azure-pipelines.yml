@@ -1,0 +1,76 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main
+- release/*
+
+stages:
+  - stage: Dev
+    variables:
+      buildConfiguration: 'Debug'
+    condition: eq(variables['Build.SourceBranch'], 'refs/heads/dev')
+    displayName: 'Deploy - DEV'
+    jobs:
+      - job: Deploy_Dev
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+        - script: dotnet build --configuration $(buildConfiguration)
+          displayName: 'Buildando para Dev'
+        - task: DotNetCoreCLI@2
+          displayName: 'Fazendo dotnet publish'
+          inputs:
+            command: 'publish'
+            publishWebProjects: true
+            projects: '**/Template.Api.csproj'
+            arguments: '-o $(Build.ArtifactStagingDirectory)'
+            modifyOutputPath: true
+        - task: PublishBuildArtifacts@1
+          inputs:
+            PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+            ArtifactName: 'drop'
+            publishLocation: 'Container'
+        - task: AzureRmWebAppDeployment@4
+          inputs:
+            ConnectionType: 'AzureRM'
+            azureSubscription: '???ALTERAR???'
+            appType: 'webAppLinux'
+            WebAppName: '???ALTERAR???'
+            packageForLinux: '$(Build.ArtifactStagingDirectory)/**/*.zip'
+            RuntimeStack: 'DOTNETCORE|8.0'
+  - stage: Prod
+    variables:
+      buildConfiguration: 'Release'
+    condition: eq(variables['Build.SourceBranch'], 'refs/heads/main')
+    displayName: 'Deploy - PROD'
+    jobs:
+      - job: Deploy_Prod
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+        - script: dotnet build --configuration $(buildConfiguration)
+          displayName: 'Buildando para Prod'
+        - task: DotNetCoreCLI@2
+          displayName: 'Fazendo dotnet publish'
+          inputs:
+            command: 'publish'
+            publishWebProjects: true
+            projects: '**/Template.Api.csproj'
+            arguments: '-o $(Build.ArtifactStagingDirectory)'
+            modifyOutputPath: true
+        - task: PublishBuildArtifacts@1
+          inputs:
+            PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+            ArtifactName: 'drop'
+            publishLocation: 'Container'
+        - task: AzureRmWebAppDeployment@4
+          inputs:
+            ConnectionType: 'AzureRM'
+            azureSubscription: '???ALTERAR???'
+            appType: 'webAppLinux'
+            WebAppName: '???ALTERAR???'
+            packageForLinux: '$(Build.ArtifactStagingDirectory)/**/*.zip'
+            RuntimeStack: 'DOTNETCORE|8.0'
