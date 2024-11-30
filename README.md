@@ -2,7 +2,7 @@
 
 Este projeto implementa uma arquitetura modular robusta com base em **Domain-Driven Design (DDD)** e **Command Query Responsibility Segregation (CQRS)**. Desenvolvido em C#, ele visa gerenciar operações de clientes, autenticação de usuários, armazenamento de arquivos e integrações com serviços externos. A estrutura é altamente desacoplada, permitindo a extensibilidade, fácil manutenção e testes eficazes.
 
-[GitHub](https://github.com/joaopaulobiesek/Template-CleanArchitecture-MultiTenancy "Template-CleanArchitecture-MultiTenancy")
+[GitHub - Template-CleanArchitecture-MultiTenancy](https://github.com/joaopaulobiesek/Template-CleanArchitecture-MultiTenancy "Template-CleanArchitecture-MultiTenancy")
 
 ## Arquitetura
 
