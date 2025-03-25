@@ -1,7 +1,7 @@
 ﻿using Template.Application.Common.Security;
 using Template.Domain.Constants;
 
-namespace Template.Application.Domains.ExternalServices.Storage.Commands.Delete;
+namespace Template.Application.Domains.ExternalServices.AzureBlobStorage.Commands.Delete;
 
 [Authorize(Roles = Roles.Admin)]
 [Authorize(Policy = Policies.CanPurge)]

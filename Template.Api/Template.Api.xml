@@ -4,40 +4,159 @@
         <name>Template.Api</name>
     </assembly>
     <members>
-        <member name="M:Template.Api.Controllers.ExternalServices.Files.FileController.UploadFileAsync(Template.Application.Common.Interfaces.Services.IStorage,Template.Application.Domains.ExternalServices.Storage.Commands.Upload.FileUploadCommand,System.Threading.CancellationToken)">
-            <summary>
-            Responsável por Subir arquivo no Azure Storage.
-            </summary>
-            <param name="storage"></param>
-            <param name="file"></param>
-            <param name="cancellationToken"></param>
-            <returns></returns>
+        <member name="M:Template.Api.Controllers.ExternalServices.AzureBlobStorage.AzureBlobStorageController.GenerateSasTokenAsync(Template.Application.Common.Behaviours.IHandlerBase{Template.Application.Domains.ExternalServices.AzureBlobStorage.Commands.GenerateSasToken.GenerateSasTokenCommand,System.String},Template.Application.Domains.ExternalServices.AzureBlobStorage.Commands.GenerateSasToken.GenerateSasTokenCommand,System.Threading.CancellationToken)">
+             <summary>
+             Gera um SAS Token do Azure Blob Storage para upload de arquivos.
+             </summary>
+             <remarks>
+             Este endpoint gera uma URL assinada (SAS Token) que permite o upload seguro de arquivos
+             diretamente para o Azure Blob Storage, sem expor credenciais sensíveis.
+            
+             **Regras de negócio:**
+             - O usuário deve estar autenticado.
+             - O nome do arquivo deve ser informado no corpo da requisição.
+             - O token gerado será válido apenas por um período limitado.
+             - O upload deve ser feito utilizando a URL gerada, respeitando as permissões concedidas no SAS Token.
+            
+             **Fluxo de uso:**
+             1. O cliente solicita a geração do SAS Token informando o nome do arquivo.
+             2. O backend retorna uma URL assinada contendo o token de acesso temporário.
+             3. O cliente faz o upload do arquivo diretamente para o Azure Blob Storage usando a URL gerada.
+            
+             **Observações:**
+             - O SAS Token gerado terá permissões apenas de **gravação** (Write).
+             - O tempo de expiração do token pode ser configurado conforme necessário.
+            
+             </remarks>
+             <param name="handler">Handler responsável pela execução da geração do token.</param>
+             <param name="cancellationToken">Token de cancelamento da requisição.</param>
+             <returns>Uma URL assinada contendo o SAS Token.</returns>
+             <response code="200">SAS Token gerado com sucesso.</response>
+             <response code="400">Parâmetros inválidos ou erro na requisição.</response>
+             <response code="401">O usuário não está autenticado.</response>
+             <response code="403">O usuário não tem permissão para acessar este recurso.</response>
         </member>
-        <member name="M:Template.Api.Controllers.ExternalServices.Files.FileController.GetFileAsync(Template.Application.Common.Interfaces.Services.IStorage,Template.Application.Domains.ExternalServices.Storage.Queries.DownloadFile.DownloadFileQuery)">
-            <summary>
-            Responsável por baixar um arquivo no Azure Storage.
-            </summary>
-            <param name="storage"></param>
-            <param name="file"></param>
-            <returns></returns>
+        <member name="M:Template.Api.Controllers.ExternalServices.AzureBlobStorage.AzureBlobStorageController.UploadFileAsync(Template.Application.Common.Interfaces.Services.IAzureStorage,Template.Application.Domains.ExternalServices.AzureBlobStorage.Commands.Upload.FileUploadCommand,System.Threading.CancellationToken)">
+             <summary>
+             Faz o upload de um arquivo para o Azure Blob Storage.
+             </summary>
+             <remarks>
+             Este endpoint permite que o usuário envie um arquivo para ser armazenado no Azure Blob Storage.
+             O arquivo será salvo com um nome único gerado automaticamente para evitar conflitos.
+            
+             **Regras de negócio:**
+             - O usuário deve estar autenticado.
+             - O arquivo deve ser enviado no formato `multipart/form-data`.
+             - O sistema gera um nome único para o arquivo antes de armazená-lo.
+             - Apenas arquivos com extensões permitidas podem ser armazenados.
+            
+             **Fluxo de uso:**
+             1. O cliente faz um `POST` enviando o arquivo via `multipart/form-data`.
+             2. O backend recebe o arquivo e gera um nome único para ele.
+             3. O arquivo é enviado para o Azure Blob Storage.
+             4. Se o upload for bem-sucedido, o backend retorna a URL do arquivo armazenado.
+            
+             **Observações:**
+             - O nome do arquivo original será substituído por um GUID para evitar duplicações.
+             - O sistema pode validar extensões ou tamanhos antes de permitir o upload.
+             - A URL retornada pode ser utilizada para acessar o arquivo posteriormente.
+            
+             </remarks>
+             <param name="handler">Serviço de armazenamento responsável pelo upload.</param>
+             <param name="file">Arquivo a ser enviado.</param>
+             <param name="cancellationToken">Token de cancelamento da requisição.</param>
+             <returns>Informações sobre o arquivo armazenado.</returns>
+             <response code="201">Upload realizado com sucesso.</response>
+             <response code="400">Parâmetros inválidos ou erro na requisição.</response>
+             <response code="401">O usuário não está autenticado.</response>
+             <response code="403">O usuário não tem permissão para acessar este recurso.</response>
         </member>
-        <member name="M:Template.Api.Controllers.ExternalServices.Files.FileController.DeleteFileAsync(Template.Application.Common.Interfaces.Services.IStorage,Template.Application.Domains.ExternalServices.Storage.Commands.Delete.FileDeleteCommand)">
-            <summary>
-            Responsável por Deletar arquivo no Azure Storage.
-            </summary>
-            <param name="storage"></param>
-            <param name="file"></param>
-            <returns></returns>
+        <member name="M:Template.Api.Controllers.ExternalServices.AzureBlobStorage.AzureBlobStorageController.GetFileAsync(Template.Application.Common.Interfaces.Services.IAzureStorage,Template.Application.Domains.ExternalServices.AzureBlobStorage.Queries.DownloadFile.DownloadFileQuery,System.Threading.CancellationToken)">
+             <summary>
+             Baixa um arquivo armazenado no Azure Blob Storage.
+             </summary>
+             <remarks>
+             Este endpoint permite que o usuário faça o download de um arquivo armazenado no Azure Blob Storage.
+             O arquivo é recuperado com base no nome informado na requisição.
+            
+             **Regras de negócio:**
+             - O usuário deve estar autenticado.
+             - O nome do arquivo deve ser informado no corpo da requisição.
+             - O sistema verifica se o arquivo existe antes de realizar o download.
+             - Se o arquivo não for encontrado, será retornado um erro apropriado.
+            
+             **Fluxo de uso:**
+             1. O cliente informa o nome do arquivo a ser baixado.
+             2. O backend busca o arquivo no Azure Blob Storage.
+             3. Se encontrado, o arquivo é retornado em formato binário.
+             4. Se o arquivo não existir, uma resposta de erro será retornada.
+            
+             **Observações:**
+             - O arquivo será retornado como um array de bytes (`byte[]`).
+             - Caso o arquivo não exista ou ocorra um erro, o sistema retornará uma mensagem de erro apropriada.
+            
+             </remarks>
+             <param name="handler">Serviço de armazenamento responsável por buscar o arquivo.</param>
+             <param name="file">Objeto contendo o nome do arquivo a ser baixado.</param>
+             <returns>O arquivo solicitado em formato binário.</returns>
+             <response code="200">Download efetuado com sucesso.</response>
+             <response code="400">Parâmetros inválidos ou erro na requisição.</response>
+             <response code="404">Arquivo não encontrado no Blob Storage.</response>
+             <response code="401">O usuário não está autenticado.</response>
+             <response code="403">O usuário não tem permissão para acessar este recurso.</response>
+        </member>
+        <member name="M:Template.Api.Controllers.ExternalServices.AzureBlobStorage.AzureBlobStorageController.DeleteFileAsync(Template.Application.Common.Interfaces.Services.IAzureStorage,Template.Application.Domains.ExternalServices.AzureBlobStorage.Commands.Delete.FileDeleteCommand,System.Threading.CancellationToken)">
+             <summary>
+             Exclui um arquivo armazenado no Azure Blob Storage.
+             </summary>
+             <remarks>
+             Este endpoint permite que o usuário exclua um arquivo armazenado no Azure Blob Storage.
+             O arquivo é identificado pelo nome informado na requisição.
+            
+             **Regras de negócio:**
+             - O usuário deve estar autenticado.
+             - O nome do arquivo deve ser informado na requisição.
+             - Se o arquivo não for encontrado, uma mensagem de erro será retornada.
+            
+             **Fluxo de uso:**
+             1. O cliente informa o nome do arquivo a ser excluído.
+             2. O backend verifica se o arquivo existe no Azure Blob Storage.
+             3. Se encontrado, o arquivo é removido.
+             4. Se o arquivo não existir, uma resposta de erro apropriada será retornada.
+            
+             **Observações:**
+             - O sistema não armazena versões dos arquivos excluídos.
+             - A exclusão é permanente, sem possibilidade de recuperação.
+             - Caso o arquivo não exista, será retornada uma mensagem de erro apropriada.
+            
+             </remarks>
+             <param name="handler">Serviço de armazenamento responsável pela exclusão do arquivo.</param>
+             <param name="fileName">Nome do arquivo a ser excluído.</param>
+             <returns>Mensagem indicando o sucesso ou erro da operação.</returns>
+             <response code="200">Arquivo deletado com sucesso.</response>
+             <response code="400">Parâmetros inválidos ou erro na requisição.</response>
+             <response code="404">Arquivo não encontrado no Blob Storage.</response>
+             <response code="401">O usuário não está autenticado.</response>
+             <response code="403">O usuário não tem permissão para acessar este recurso.</response>
         </member>
         <member name="M:Template.Api.Controllers.ExternalServices.Google.GoogleController.GetGoogleCalendarEventsAsync(Template.Application.Common.Behaviours.IHandlerBase{Template.Application.Domains.ExternalServices.Google.Queries.CalendarEvents.GetCalendarEventsQuery,System.Collections.Generic.List{Template.Application.Common.Models.GoogleCalendarEvent}},System.Threading.CancellationToken)">
             <summary>
             Obtém os eventos do Google Calendar do usuário logado.
             </summary>
-            <param name="handler">Handler responsável por executar a lógica de busca dos eventos do Google Calendar.</param>
-            <param name="cancellationToken">Token para cancelar a operação, caso necessário.</param>
-            <returns>
-            Retorna uma resposta contendo a lista de eventos do Google Calendar ou erros, caso ocorram.
-            </returns>
+            <remarks>
+            Este endpoint retorna a lista de eventos do Google Calendar associados à conta do usuário autenticado.
+            
+            **Regras de negócio:**
+            - O usuário deve estar autenticado e possuir permissões para acessar os eventos do Google Calendar.
+            - O sistema consulta os eventos diretamente no Google Calendar utilizando as credenciais do usuário.
+            </remarks>
+            <param name="handler">Handler responsável pela execução da busca de eventos.</param>
+            <param name="cancellationToken">Token de cancelamento da requisição.</param>
+            <returns>Lista de eventos do Google Calendar.</returns>
+            <response code="200">Lista de eventos obtida com sucesso.</response>
+            <response code="400">Parâmetros inválidos ou erro na requisição.</response>
+            <response code="401">O usuário não está autenticado.</response>
+            <response code="403">O usuário não tem permissão para acessar este recurso.</response>
         </member>
         <member name="T:Template.Api.Controllers.Identity.Auth.AuthController">
             <summary>
@@ -46,80 +165,156 @@
         </member>
         <member name="M:Template.Api.Controllers.Identity.Auth.AuthController.LoginAsync(Template.Application.Common.Behaviours.IHandlerBase{Template.Application.Domains.Identity.Auth.Commands.LoginUser.LoginUserCommand,Template.Application.ViewModels.Users.LoginUserVm},Template.Application.Domains.Identity.Auth.Commands.LoginUser.LoginUserCommand,System.Threading.CancellationToken)">
             <summary>
-            Realiza o login no sistema utilizando as credenciais fornecidas pelo usuário.
+            Realiza a autenticação do usuário no sistema.
             </summary>
-            <param name="handler">Handler para processar a execução do comando de login.</param>
-            <param name="command">Comando contendo as credenciais de login do usuário.</param>
-            <param name="cancellationToken">Token para controle de cancelamento da operação.</param>
-            <returns>Resposta indicando sucesso ou falha na autenticação, incluindo o token em caso de sucesso.</returns>
+            <remarks>
+            Este endpoint processa o login do usuário no sistema, validando suas credenciais.
+            
+            **Regras de negócio:**
+            - O usuário deve fornecer um e-mail e senha válidos.
+            - O sistema retorna um token JWT caso a autenticação seja bem-sucedida.
+            - Caso o token não seja gerado corretamente, retorna erro de autenticação.
+                
+            </remarks>
+            <param name="handler">Handler responsável pelo processamento da autenticação.</param>
+            <param name="command">Os parâmetros necessários para login do usuário.</param>
+            <param name="cancellationToken">Token de cancelamento da requisição.</param>
+            <returns>Os detalhes do usuário autenticado com o token gerado.</returns>
+            <response code="200">Login realizado com sucesso.</response>
+            <response code="400">Parâmetros inválidos.</response>
+            <response code="401">Usuário ou senha inválidos.</response>
         </member>
         <member name="M:Template.Api.Controllers.Identity.Auth.AuthController.GoogleCallback(Template.Application.Common.Interfaces.Services.IGoogle,Template.Application.Common.Interfaces.Security.IIdentityService,System.String,System.Threading.CancellationToken)">
             <summary>
-            Processa o retorno do Google OAuth 2.0 após a autenticação, gerando um token para o usuário no sistema.
+            Processa o retorno do Google OAuth 2.0 após a autenticação.
             </summary>
-            <param name="google">Serviço de autenticação Google responsável pelo processamento do login externo.</param>
-            <param name="service">Serviço de identidade para manipulação de usuários e integrações.</param>
-            <param name="code">Código de autorização recebido do Google após o login.</param>
-            <param name="cancellationToken">Token para controle de cancelamento da operação.</param>
-            <returns>Resposta contendo sucesso ou falha no processo de autenticação, com os detalhes necessários.</returns>
+            <remarks>
+            Este endpoint recebe o código de autorização do Google e realiza a autenticação do usuário.
+            
+            **Regras de negócio:**
+            - O código de autorização deve ser válido.
+            - Se a autenticação for bem-sucedida, o sistema gera um token JWT para o usuário.
+            </remarks>
+            <param name="google">Serviço de autenticação Google.</param>
+            <param name="service">Serviço de identidade para manipulação de usuários.</param>
+            <param name="code">Código de autorização do Google.</param>
+            <param name="state">Estado retornado pela autenticação.</param>
+            <param name="cancellationToken">Token de cancelamento da requisição.</param>
+            <returns>Resposta contendo sucesso ou falha na autenticação.</returns>
+            <response code="200">Usuário autenticado com sucesso.</response>
+            <response code="400">Código de autorização inválido.</response>
+            <response code="401">Falha na autenticação do usuário.</response>
         </member>
         <member name="M:Template.Api.Controllers.Identity.Auth.AuthController.GoogleLogin(Template.Application.Common.Interfaces.Services.IGoogle,System.Threading.CancellationToken)">
             <summary>
-            Gera o link de login para iniciar o processo de autenticação no Google.
+            Gera o link de login para autenticação no Google.
             </summary>
-            <param name="google">Serviço de autenticação Google responsável por gerar o URL de autenticação.</param>
-            <param name="cancellationToken">Token para controle de cancelamento da operação.</param>
-            <returns>Resposta contendo a URL gerada para o login no Google.</returns>
+            <remarks>
+            Este endpoint gera a URL necessária para iniciar o processo de autenticação com o Google.
+            
+            **Regras de negócio:**
+            - O sistema retorna a URL que deve ser acessada pelo cliente para autenticação.
+            </remarks>
+            <param name="google">Serviço de autenticação Google.</param>
+            <param name="cancellationToken">Token de cancelamento da requisição.</param>
+            <returns>URL de autenticação no Google.</returns>
+            <response code="200">URL gerada com sucesso.</response>
+            <response code="400">Erro ao gerar URL de autenticação.</response>
         </member>
         <member name="M:Template.Api.Controllers.Identity.Users.UsersController.CreateUserAsync(Template.Application.Common.Behaviours.IHandlerBase{Template.Application.Domains.Identity.Users.Commands.CreateUsers.CreateUserCommand,Template.Application.Common.Models.User},Template.Application.Domains.Identity.Users.Commands.CreateUsers.CreateUserCommand,System.Threading.CancellationToken)">
             <summary>
-            Responsável por criar novos usuários no sistema.
+            Responsável por criar um novo usuário no sistema.
             </summary>
-            <param name="handler"></param>
-            <param name="command">Forneça as informações para criar o usuário.</param>
-            <returns></returns>
+            <remarks>
+            Este endpoint permite a criação de um novo usuário com suas respectivas permissões e funções.
+            
+            **Regras de negócio:**
+            - O usuário deve possuir um e-mail e uma senha válidos.
+            - As funções e permissões devem ser definidas no momento da criação.
+            </remarks>
+            <param name="handler">Handler responsável pelo processamento da criação do usuário.</param>
+            <param name="command">Os parâmetros necessários para criar o usuário.</param>
+            <param name="cancellationToken">Token de cancelamento da requisição.</param>
+            <returns>Os detalhes do usuário criado.</returns>
+            <response code="200">Usuário criado com sucesso.</response>
+            <response code="400">Parâmetros inválidos.</response>
+            <response code="401">O usuário não está autenticado para acessar este recurso.</response>
+            <response code="403">O usuário não tem permissão para acessar este recurso.</response>
         </member>
         <member name="M:Template.Api.Controllers.Identity.Users.UsersController.PolicesAsync(Template.Application.Common.Behaviours.IHandlerBase{Template.Application.Domains.Identity.Users.Queries.GetPolices.GetPolicesQuery,System.Collections.Generic.IEnumerable{Template.Application.ViewModels.Shared.KeyValuePairVM}},System.Threading.CancellationToken)">
             <summary>
-            Obtém a lista completa de políticas de acesso do sistema para exibição e configuração de permissões.
+            Obtém a lista de políticas de acesso do sistema.
             </summary>
-            <param name="handler">Handler que executa a consulta para obter as políticas.</param>
-            <param name="cancellationToken">Token de cancelamento para interromper a operação, se necessário.</param>
-            <returns>Retorna uma lista de objetos KeyValuePairVM, contendo as políticas de acesso.</returns>
+            <remarks>
+            Este endpoint retorna a lista de políticas disponíveis para configuração de permissões.
+            </remarks>
+            <param name="handler">Handler responsável pela consulta das políticas.</param>
+            <param name="cancellationToken">Token de cancelamento da requisição.</param>
+            <returns>Lista de políticas disponíveis.</returns>
+            <response code="200">Lista de políticas obtida com sucesso.</response>
+            <response code="401">O usuário não está autenticado para acessar este recurso.</response>
+            <response code="403">O usuário não tem permissão para acessar este recurso.</response>
         </member>
         <member name="M:Template.Api.Controllers.Identity.Users.UsersController.RolesAsync(Template.Application.Common.Behaviours.IHandlerBase{Template.Application.Domains.Identity.Users.Queries.GetRoles.GetRolesQuery,System.Collections.Generic.IEnumerable{Template.Application.ViewModels.Shared.KeyValuePairVM}},System.Threading.CancellationToken)">
             <summary>
-            Obtém a lista completa de funções disponíveis no sistema para definição de permissões e acesso.
+            Obtém a lista de funções disponíveis no sistema.
             </summary>
-            <param name="handler">Handler que executa a consulta para obter as roles.</param>
-            <param name="cancellationToken">Token de cancelamento para interromper a operação, se necessário.</param>
-            <returns>Retorna uma lista de objetos KeyValuePairVM, contendo as funções disponíveis no sistema.</returns>
+            <remarks>
+            Este endpoint retorna todas as funções disponíveis para atribuição de permissões.
+            </remarks>
+            <param name="handler">Handler responsável pela consulta das funções.</param>
+            <param name="cancellationToken">Token de cancelamento da requisição.</param>
+            <returns>Lista de funções disponíveis.</returns>
+            <response code="200">Lista de funções obtida com sucesso.</response>
+            <response code="401">O usuário não está autenticado para acessar este recurso.</response>
+            <response code="403">O usuário não tem permissão para acessar este recurso.</response>
         </member>
         <member name="M:Template.Api.Controllers.Identity.Users.UsersController.EditUserAsync(Template.Application.Common.Behaviours.IHandlerBase{Template.Application.Domains.Identity.Users.Commands.EditUsers.EditUserCommand,Template.Application.Common.Models.User},Template.Application.Domains.Identity.Users.Commands.EditUsers.EditUserCommand,System.Threading.CancellationToken)">
             <summary>
-            Responsável por editar usuário no sistema.
+            Atualiza as informações de um usuário.
             </summary>
-            <param name="handler"></param>
-            <param name="command">Forneça as informações para editar o usuário.</param>
-            <returns></returns>
+            <remarks>
+            Este endpoint permite a edição dos detalhes do usuário, incluindo permissões e funções.
+            </remarks>
+            <param name="handler">Handler responsável pelo processamento da edição do usuário.</param>
+            <param name="command">Os parâmetros necessários para editar o usuário.</param>
+            <param name="cancellationToken">Token de cancelamento da requisição.</param>
+            <returns>Os detalhes do usuário atualizado.</returns>
+            <response code="200">Usuário atualizado com sucesso.</response>
+            <response code="400">Parâmetros inválidos.</response>
+            <response code="401">O usuário não está autenticado para acessar este recurso.</response>
+            <response code="403">O usuário não tem permissão para acessar este recurso.</response>
         </member>
         <member name="M:Template.Api.Controllers.Identity.Users.UsersController.UsuariosAsync(Template.Application.Common.Behaviours.IHandlerBase{Template.Application.Domains.Identity.Users.Queries.GetAll.GetAllQuery,System.Collections.Generic.IEnumerable{Template.Application.ViewModels.Users.UserVm}},Template.Application.Domains.Identity.Users.Queries.GetAll.GetAllQuery,System.Threading.CancellationToken)">
             <summary>
-            Responsável por listar usuários paginados, ordenados e filtrados por email, CPF ou nome.
+            Lista usuários paginados e filtrados.
             </summary>
-            <param name="handler"></param>
-            <param name="query">O objeto de consulta contendo os parâmetros de paginação, ordenação e filtro.</param>
-            <param name="cancellationToken"></param>
-            <returns></returns>
+            <remarks>
+            Este endpoint retorna uma lista paginada de usuários, permitindo filtro por e-mail, CPF ou nome.
+            </remarks>
+            <param name="handler">Handler responsável pelo processamento da consulta.</param>
+            <param name="query">Os parâmetros necessários para a listagem de usuários.</param>
+            <param name="cancellationToken">Token de cancelamento da requisição.</param>
+            <returns>Lista paginada de usuários.</returns>
+            <response code="200">Lista de usuários obtida com sucesso.</response>
+            <response code="401">O usuário não está autenticado para acessar este recurso.</response>
+            <response code="403">O usuário não tem permissão para acessar este recurso.</response>
         </member>
         <member name="M:Template.Api.Controllers.Identity.Users.UsersController.DeleteUserAsync(Template.Application.Common.Behaviours.IHandlerBase{System.Guid,System.String},System.Guid,System.Threading.CancellationToken)">
             <summary>
-            Responsável por deletar usuário pelo Id.
+            Deleta um usuário pelo ID.
             </summary>
-            <param name="handler"></param>
-            <param name="userId"></param>
-            <param name="cancellationToken"></param>
-            <returns></returns>
+            <remarks>
+            Este endpoint permite a exclusão de um usuário com base em seu identificador único.
+            </remarks>
+            <param name="handler">Handler responsável pelo processamento da exclusão do usuário.</param>
+            <param name="userId">O identificador do usuário a ser deletado.</param>
+            <param name="cancellationToken">Token de cancelamento da requisição.</param>
+            <returns>Confirmação da exclusão do usuário.</returns>
+            <response code="200">Usuário deletado com sucesso.</response>
+            <response code="400">Parâmetros inválidos.</response>
+            <response code="401">O usuário não está autenticado para acessar este recurso.</response>
+            <response code="403">O usuário não tem permissão para acessar este recurso.</response>
         </member>
         <member name="M:Template.Api.Controllers.InternalServices.Tenant.ClientController.CreateClientAsync(Template.Application.Common.Behaviours.IHandlerBase{Template.Application.Domains.InternalServices.Clients.Commands.CreateClient.CreateClientCommand,Template.Application.ViewModels.Clients.ClientVM},Template.Application.Domains.InternalServices.Clients.Commands.CreateClient.CreateClientCommand,System.Threading.CancellationToken)">
             <summary>
@@ -166,9 +361,17 @@
         </member>
         <member name="M:Template.Api.Controllers.System.HealthController.HealthCheck">
             <summary>
-            Endpoint de verificação de integridade.
+            Verifica a integridade do sistema.
             </summary>
-            <returns></returns>
+            <remarks>
+            Este endpoint retorna um status indicando se a API está operacional.
+            
+            **Regras de negócio:**
+            - Sempre retorna `200 OK` caso o serviço esteja em funcionamento.
+            - Pode ser utilizado para monitoramento de disponibilidade da API.
+            </remarks>
+            <returns>Retorna um status indicando que o sistema está saudável.</returns>
+            <response code="200">O sistema está operacional.</response>
         </member>
     </members>
 </doc>

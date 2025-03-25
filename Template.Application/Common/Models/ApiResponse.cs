@@ -1,16 +1,21 @@
-﻿namespace Template.Application.Common.Models;
+﻿using System.Text.Json.Serialization;
+
+namespace Template.Application.Common.Models;
 
 public abstract class ApiResponse<T> where T : notnull
 {
+    [JsonIgnore]
+    public int StatusCode { get; set; }
     public bool Success { get; set; }
     public string Message { get; set; }
     public T? Data { get; set; }
 
-    protected ApiResponse(bool sucesso, string message, T? data)
+    protected ApiResponse(bool sucesso, string message, T? data, int statusCode = 200)
     {
         Success = sucesso;
         Message = message;
         Data = data;
+        StatusCode = statusCode;
     }
 }
 
@@ -23,12 +28,10 @@ public class SuccessResponse<T> : ApiResponse<T> where T : notnull
 
 public class ErrorResponse<T> : ApiResponse<T> where T : notnull
 {
-    public int StatusCode { get; }
     public ICollection<NotificationError>? Errors { get; private set; }
 
-    public ErrorResponse(string message, int statusCode = 400, T? data = default, ICollection<NotificationError>? erros = null) : base(false, message, data)
+    public ErrorResponse(string message, int statusCode = 400, T? data = default, ICollection<NotificationError>? erros = null) : base(false, message, data, statusCode)
     {
-        StatusCode = statusCode;
         Errors = erros;
     }
 
