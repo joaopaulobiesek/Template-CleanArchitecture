@@ -14,6 +14,7 @@ namespace Template.Domain.Validation
         }
 
         private static readonly Regex EmailRegex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.Compiled);
+        private static readonly Regex HexColorRegex = new Regex(@"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$", RegexOptions.Compiled);
 
         public static void ValidateRequiredString(string? value, string errorMessage)
         {
@@ -36,6 +37,11 @@ namespace Template.Domain.Validation
             {
                 When(!EmailRegex.IsMatch(email), errorMessage);
             }
+        }
+
+        public static void ValidateHexColorFormat(string? color, string errorMessage)
+        {
+            When(!string.IsNullOrEmpty(color) && !HexColorRegex.IsMatch(color), errorMessage);
         }
     }
 }

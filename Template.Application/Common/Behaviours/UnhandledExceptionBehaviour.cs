@@ -32,7 +32,14 @@ public class UnhandledExceptionBehaviour<TRequest, TResponse> where TResponse : 
             var requestName = typeof(TRequest).Name;
             _logger.LogError(ex, "Unhandled Exception for Request {Name} {@Request}", requestName, request);
 
-            return new ErrorResponse<TResponse>(ex.Message, 400);
+            var errors = new List<NotificationError>();
+
+            if (ex.InnerException != null)
+            {
+                errors.Add(new NotificationError("InnerException", ex.InnerException.Message));
+            }
+
+            return new ErrorResponse<TResponse>(ex.Message, 400, default, errors.Any() ? errors : null);
         }
     }
 }

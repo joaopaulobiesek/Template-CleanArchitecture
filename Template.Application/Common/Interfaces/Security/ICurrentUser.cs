@@ -3,4 +3,5 @@
 public interface ICurrentUser
 {
     string? Id { get; }
+    string? GroupName { get; }
 }

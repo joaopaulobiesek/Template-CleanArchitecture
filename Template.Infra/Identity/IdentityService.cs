@@ -1,30 +1,21 @@
-﻿using System.Linq.Expressions;
-using Template.Application.Common.Interfaces.Security;
+﻿using Template.Application.Common.Interfaces.Security;
 using Template.Application.Common.Models;
-using Template.Application.ViewModels.Users;
+using Template.Application.Domains.V1.ViewModels.Users;
 using Template.Domain.Constants;
+using System.Linq.Expressions;
 
 namespace Template.Infra.Identity;
 
 public class IdentityService : IIdentityService
 {
     private readonly UserManager<ContextUser> _userManager;
-    private readonly SignInManager<ContextUser> _signInManager;
-    private readonly IUserClaimsPrincipalFactory<ContextUser> _userClaimsPrincipalFactory;
-    private readonly IAuthorizationService _authorizationService;
     private readonly ITokenService _tokenService;
 
     public IdentityService(
         UserManager<ContextUser> userManager,
-        SignInManager<ContextUser> signInManager,
-        IUserClaimsPrincipalFactory<ContextUser> userClaimsPrincipalFactory,
-        IAuthorizationService authorizationService,
         ITokenService tokenService)
     {
-        _signInManager = signInManager;
         _userManager = userManager;
-        _userClaimsPrincipalFactory = userClaimsPrincipalFactory;
-        _authorizationService = authorizationService;
         _tokenService = tokenService;
     }
 
@@ -50,7 +41,7 @@ public class IdentityService : IIdentityService
         return user?.UserName;
     }
 
-    public async Task<UserVm> CreateUserAsync(IUser user, string password)
+    public async Task<UserVm> CreateUserAsync(IUser user, string? password)
     {
         var newUser = new ContextUser
         {
@@ -60,7 +51,12 @@ public class IdentityService : IIdentityService
             ProfileImageUrl = user.ProfileImageUrl,
         };
 
-        var result = await _userManager.CreateAsync(newUser, password);
+        var result = new IdentityResult();
+
+        if (string.IsNullOrEmpty(password))
+            result = await _userManager.CreateAsync(newUser);
+        else
+            result = await _userManager.CreateAsync(newUser, password);
 
         if (!result.Succeeded)
             return new UserVm();
@@ -256,20 +252,7 @@ public class IdentityService : IIdentityService
             .ToList();
     }
 
-    public async Task<(string loginProvider, string providerKey, string email, string name)> GetExternalLoginInfo()
-    {
-        var info = await _signInManager.GetExternalLoginInfoAsync();
-
-        if (info == null)
-            return (string.Empty, string.Empty, string.Empty, string.Empty);
-
-        var email = info.Principal.FindFirstValue(ClaimTypes.Email) ?? string.Empty;
-        var name = info.Principal.FindFirstValue(ClaimTypes.Name) ?? string.Empty;
-
-        return (info.LoginProvider, info.ProviderKey, email, name);
-    }
-
-    public async Task<ApiResponse<string>> HandleExternalLoginAsync(string provider, string providerKey, string email, string name, string? picture)
+    public async Task<ApiResponse<string>> HandleExternalLoginAsync(string provider, string providerKey, string email, string name, string? picture, Guid xTenantID)
     {
         var user = await _userManager.FindByLoginAsync(provider, providerKey);
         if (user != null)
@@ -379,6 +362,16 @@ public class IdentityService : IIdentityService
             "Success to get authentication token.",
             await _userManager.GetAuthenticationTokenAsync(user, loginProvider, tokenName)
         );
+    }
+
+    public async Task<UserVm> SearchUserByEmailOrUserNameAsync(string emailUserName)
+    {
+        var user = await SearchUserAsync(emailUserName);
+
+        if (user == null)
+            return new UserVm();
+
+        return new UserVm(user.Id, user.Email);
     }
 
     private async Task<ContextUser?> SearchUserAsync(string emailUserName) =>

@@ -6,7 +6,7 @@ public class PaginatedList<T> : ApiResponse<IEnumerable<T>>
     public int TotalPages { get; }
     public int TotalItens { get; }
     public bool HasPagePrevious => PageNumber > 1;
-    public bool TemNextPage => PageNumber < TotalPages;
+    public bool HasNextPage => PageNumber < TotalPages;
 
     public PaginatedList(IReadOnlyCollection<T>? items, int count, int pageNumber, int pageSize, string mensagem = "") : base(true, mensagem, items)
     {

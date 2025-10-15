@@ -4,7 +4,64 @@
         <name>Template.Api</name>
     </assembly>
     <members>
-        <member name="M:Template.Api.Controllers.ExternalServices.AzureBlobStorage.AzureBlobStorageController.GenerateSasTokenAsync(Template.Application.Common.Behaviours.IHandlerBase{Template.Application.Domains.ExternalServices.AzureBlobStorage.Commands.GenerateSasToken.GenerateSasTokenCommand,System.String},Template.Application.Domains.ExternalServices.AzureBlobStorage.Commands.GenerateSasToken.GenerateSasTokenCommand,System.Threading.CancellationToken)">
+        <member name="M:Template.Api.Controllers.System.HealthController.HealthCheck">
+            <summary>
+            Verifica a integridade do sistema.
+            </summary>
+            <remarks>
+            Este endpoint retorna um status indicando se a API está operacional.
+            
+            **Regras de negócio:**
+            - Sempre retorna `200 OK` caso o serviço esteja em funcionamento.
+            - Pode ser utilizado para monitoramento de disponibilidade da API.
+            </remarks>
+            <returns>Retorna um status indicando que o sistema está saudável.</returns>
+            <response code="200">O sistema está operacional.</response>
+        </member>
+        <member name="M:Template.Api.Controllers.Tenant.V1.Clients.ClientController.CreateClientAsync(Template.Application.Common.Behaviours.IHandlerBase{Template.Application.Domains.Tenant.V1.Clients.Commands.CreateClient.CreateClientCommand,Template.Application.Domains.Tenant.V1.ViewModels.ClientVM},Template.Application.Domains.Tenant.V1.Clients.Commands.CreateClient.CreateClientCommand,System.Threading.CancellationToken)">
+            <summary>
+            Responsável por Registrar um novo cliente.
+            </summary>
+            <param name="handler"></param>
+            <param name="command"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Template.Api.Controllers.Tenant.V1.Clients.ClientController.UpdateClientAsync(Template.Application.Common.Behaviours.IHandlerBase{Template.Application.Domains.Tenant.V1.Clients.Commands.UpdateClient.UpdateClientCommand,Template.Application.Domains.Tenant.V1.ViewModels.ClientVM},Template.Application.Domains.Tenant.V1.Clients.Commands.UpdateClient.UpdateClientCommand,System.Threading.CancellationToken)">
+            <summary>
+            Responsável por Editar um cliente.
+            </summary>
+            <param name="handler"></param>
+            <param name="command"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Template.Api.Controllers.Tenant.V1.Clients.ClientController.GetAllAsync(Template.Application.Common.Behaviours.IHandlerBase{Template.Application.Domains.Tenant.V1.Clients.Queries.GetAll.GetAllQuery,System.Collections.Generic.IEnumerable{Template.Application.Domains.Tenant.V1.ViewModels.ClientVM}},Template.Application.Domains.Tenant.V1.Clients.Queries.GetAll.GetAllQuery,System.Threading.CancellationToken)">
+            <summary>
+            Responsável por listar todos os clientes.
+            </summary>
+            <param name="handler"></param>
+            <param name="query"></param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Template.Api.Controllers.Tenant.V1.Clients.ClientController.DeactivateClientAsync(Template.Application.Common.Behaviours.IHandlerBase{Template.Application.Domains.Tenant.V1.Clients.Commands.DeactivateClient.DeactivateClientCommand,System.String},Template.Application.Domains.Tenant.V1.Clients.Commands.DeactivateClient.DeactivateClientCommand,System.Threading.CancellationToken)">
+            <summary>
+            Responsável por desativar um cliente.
+            </summary>
+            <param name="handler"></param>
+            <param name="command"></param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Template.Api.Controllers.Tenant.V1.Clients.ClientController.DeleteClientAsync(Template.Application.Common.Behaviours.IHandlerBase{System.Guid,System.String},System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Responsável por excluir um cliente fisicamente.
+            </summary>
+            <param name="handler"></param>
+            <param name="clientId"></param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Template.Api.Controllers.V1.ExternalServices.AzureBlobStorage.AzureBlobStorageController.GenerateSasTokenAsync(Template.Application.Common.Behaviours.IHandlerBase{Template.Application.Domains.V1.ExternalServices.AzureBlobStorage.Commands.GenerateSasToken.GenerateSasTokenCommand,System.String},Template.Application.Domains.V1.ExternalServices.AzureBlobStorage.Commands.GenerateSasToken.GenerateSasTokenCommand,System.Threading.CancellationToken)">
              <summary>
              Gera um SAS Token do Azure Blob Storage para upload de arquivos.
              </summary>
@@ -36,7 +93,7 @@
              <response code="401">O usuário não está autenticado.</response>
              <response code="403">O usuário não tem permissão para acessar este recurso.</response>
         </member>
-        <member name="M:Template.Api.Controllers.ExternalServices.AzureBlobStorage.AzureBlobStorageController.UploadFileAsync(Template.Application.Common.Interfaces.Services.IAzureStorage,Template.Application.Domains.ExternalServices.AzureBlobStorage.Commands.Upload.FileUploadCommand,System.Threading.CancellationToken)">
+        <member name="M:Template.Api.Controllers.V1.ExternalServices.AzureBlobStorage.AzureBlobStorageController.UploadFileAsync(Template.Application.Common.Interfaces.Services.IAzureStorage,Template.Application.Domains.V1.ExternalServices.AzureBlobStorage.Commands.Upload.FileUploadCommand,System.Threading.CancellationToken)">
              <summary>
              Faz o upload de um arquivo para o Azure Blob Storage.
              </summary>
@@ -71,7 +128,7 @@
              <response code="401">O usuário não está autenticado.</response>
              <response code="403">O usuário não tem permissão para acessar este recurso.</response>
         </member>
-        <member name="M:Template.Api.Controllers.ExternalServices.AzureBlobStorage.AzureBlobStorageController.GetFileAsync(Template.Application.Common.Interfaces.Services.IAzureStorage,Template.Application.Domains.ExternalServices.AzureBlobStorage.Queries.DownloadFile.DownloadFileQuery,System.Threading.CancellationToken)">
+        <member name="M:Template.Api.Controllers.V1.ExternalServices.AzureBlobStorage.AzureBlobStorageController.GetFileAsync(Template.Application.Common.Interfaces.Services.IAzureStorage,Template.Application.Domains.V1.ExternalServices.AzureBlobStorage.Queries.DownloadFile.DownloadFileQuery,System.Threading.CancellationToken)">
              <summary>
              Baixa um arquivo armazenado no Azure Blob Storage.
              </summary>
@@ -105,7 +162,7 @@
              <response code="401">O usuário não está autenticado.</response>
              <response code="403">O usuário não tem permissão para acessar este recurso.</response>
         </member>
-        <member name="M:Template.Api.Controllers.ExternalServices.AzureBlobStorage.AzureBlobStorageController.DeleteFileAsync(Template.Application.Common.Interfaces.Services.IAzureStorage,Template.Application.Domains.ExternalServices.AzureBlobStorage.Commands.Delete.FileDeleteCommand,System.Threading.CancellationToken)">
+        <member name="M:Template.Api.Controllers.V1.ExternalServices.AzureBlobStorage.AzureBlobStorageController.DeleteFileAsync(Template.Application.Common.Interfaces.Services.IAzureStorage,Template.Application.Domains.V1.ExternalServices.AzureBlobStorage.Commands.Delete.FileDeleteCommand,System.Threading.CancellationToken)">
              <summary>
              Exclui um arquivo armazenado no Azure Blob Storage.
              </summary>
@@ -139,7 +196,7 @@
              <response code="401">O usuário não está autenticado.</response>
              <response code="403">O usuário não tem permissão para acessar este recurso.</response>
         </member>
-        <member name="M:Template.Api.Controllers.ExternalServices.Google.GoogleController.GetGoogleCalendarEventsAsync(Template.Application.Common.Behaviours.IHandlerBase{Template.Application.Domains.ExternalServices.Google.Queries.CalendarEvents.GetCalendarEventsQuery,System.Collections.Generic.List{Template.Application.Common.Models.GoogleCalendarEvent}},System.Threading.CancellationToken)">
+        <member name="M:Template.Api.Controllers.V1.ExternalServices.Google.GoogleController.GetGoogleCalendarEventsAsync(Template.Application.Common.Behaviours.IHandlerBase{Template.Application.Domains.V1.ExternalServices.Google.Queries.CalendarEvents.GetCalendarEventsQuery,System.Collections.Generic.List{Template.Application.Common.Models.GoogleCalendarEvent}},System.Threading.CancellationToken)">
             <summary>
             Obtém os eventos do Google Calendar do usuário logado.
             </summary>
@@ -158,33 +215,43 @@
             <response code="401">O usuário não está autenticado.</response>
             <response code="403">O usuário não tem permissão para acessar este recurso.</response>
         </member>
-        <member name="T:Template.Api.Controllers.Identity.Auth.AuthController">
+        <member name="T:Template.Api.Controllers.V1.Identity.Auth.AuthController">
             <summary>
             Controller responsável pelas operações de autenticação, incluindo login no sistema e integração com provedores externos.
             </summary>
         </member>
-        <member name="M:Template.Api.Controllers.Identity.Auth.AuthController.LoginAsync(Template.Application.Common.Behaviours.IHandlerBase{Template.Application.Domains.Identity.Auth.Commands.LoginUser.LoginUserCommand,Template.Application.ViewModels.Users.LoginUserVm},Template.Application.Domains.Identity.Auth.Commands.LoginUser.LoginUserCommand,System.Threading.CancellationToken)">
-            <summary>
-            Realiza a autenticação do usuário no sistema.
-            </summary>
-            <remarks>
-            Este endpoint processa o login do usuário no sistema, validando suas credenciais.
+        <member name="M:Template.Api.Controllers.V1.Identity.Auth.AuthController.LoginAsync(Template.Application.Common.Behaviours.IHandlerBase{Template.Application.Domains.V1.Identity.Auth.Commands.LoginUser.LoginUserCommand,Template.Application.Domains.V1.ViewModels.Users.LoginUserVm},Template.Application.Domains.V1.Identity.Auth.Commands.LoginUser.LoginUserCommand,System.Threading.CancellationToken)">
+             <summary>
+             Realiza a autenticação do usuário no sistema.
+             </summary>
+             <remarks>
+             Este endpoint processa o login do usuário no sistema, validando suas credenciais.
+             
+             **Regras de negócio:**
+             - O usuário deve fornecer um e-mail e senha válidos.
+             - O sistema retorna um token JWT caso a autenticação seja bem-sucedida.
+             - Caso o token não seja gerado corretamente, retorna erro de autenticação.
+             
+             `Tenant ID:` 94889bac-1b30-485d-a0c6-df1faaf9e7ce
+             
+             `Token ADMIN:` Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjVjZWYyZmUzLTJiNjItNGJlZi05YzMyLWRiMzUyYTkyNzgyMCIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL2VtYWlsYWRkcmVzcyI6ImFkbWluQGFkbWluLmNvbSIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWUiOiJBZG1pbmlzdHJhZG9yIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbW9iaWxlcGhvbmUiOiIiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBRE1JTiIsImV4cCI6MTc2NjE1NDYxMSwiaXNzIjoiaHR0cHM6Ly9sb2NhbGhvc3QiLCJhdWQiOiJodHRwczovL2xvY2FsaG9zdCJ9.X_9oSbC3RxCrKWJ_0a8n4xSToVi9lA7bscZE4ELa-4M
             
-            **Regras de negócio:**
-            - O usuário deve fornecer um e-mail e senha válidos.
-            - O sistema retorna um token JWT caso a autenticação seja bem-sucedida.
-            - Caso o token não seja gerado corretamente, retorna erro de autenticação.
-                
-            </remarks>
-            <param name="handler">Handler responsável pelo processamento da autenticação.</param>
-            <param name="command">Os parâmetros necessários para login do usuário.</param>
-            <param name="cancellationToken">Token de cancelamento da requisição.</param>
-            <returns>Os detalhes do usuário autenticado com o token gerado.</returns>
-            <response code="200">Login realizado com sucesso.</response>
-            <response code="400">Parâmetros inválidos.</response>
-            <response code="401">Usuário ou senha inválidos.</response>
+             
+             `Token Expositor:` Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjQxNjI0OGJlLWM2ZTgtNDc3Yi05OTg5LTdhZWYyYTZiZjUxZCIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL2VtYWlsYWRkcmVzcyI6ImV4cG9zaXRvckBhZG1pbi5jb20iLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiRXhwb3NpdG9yIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbW9iaWxlcGhvbmUiOiIiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJFWEhJQklUT1IiLCJleHAiOjE3NjYxNTQ3NzYsImlzcyI6Imh0dHBzOi8vbG9jYWxob3N0IiwiYXVkIjoiaHR0cHM6Ly9sb2NhbGhvc3QifQ.G_N5qFmQNevcRyUafqu96BaQnPT2zJxjsjFwj-q27zw
+              
+             
+             `PrestadorDeServico:` Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6ImQ0ZWUxZjIxLWMyZmMtNGZjMS1hMDIxLTdkYjg4MTg1NWRlMCIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL2VtYWlsYWRkcmVzcyI6Im1vbnRhZG9yYUBhZG1pbi5jb20iLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiTW9udGFkb3JhIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbW9iaWxlcGhvbmUiOiIiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJTRVJWSUNFUFJPVklERVIiLCJleHAiOjE3NjYxNTQ4MDIsImlzcyI6Imh0dHBzOi8vbG9jYWxob3N0IiwiYXVkIjoiaHR0cHM6Ly9sb2NhbGhvc3QifQ.EhOpwVMg1OU_v14jYpq1HEME2N_Lk79WsF6kAtUrkeQ
+             
+             </remarks>
+             <param name="handler">Handler responsável pelo processamento da autenticação.</param>
+             <param name="command">Os parâmetros necessários para login do usuário.</param>
+             <param name="cancellationToken">Token de cancelamento da requisição.</param>
+             <returns>Os detalhes do usuário autenticado com o token gerado.</returns>
+             <response code="200">Login realizado com sucesso.</response>
+             <response code="400">Parâmetros inválidos.</response>
+             <response code="401">Usuário ou senha inválidos.</response>
         </member>
-        <member name="M:Template.Api.Controllers.Identity.Auth.AuthController.GoogleCallback(Template.Application.Common.Interfaces.Services.IGoogle,Template.Application.Common.Interfaces.Security.IIdentityService,System.String,System.Threading.CancellationToken)">
+        <member name="M:Template.Api.Controllers.V1.Identity.Auth.AuthController.GoogleCallback(Template.Application.Common.Interfaces.Services.IGoogle,Template.Application.Common.Interfaces.Security.IIdentityService,System.String,System.String,System.Threading.CancellationToken)">
             <summary>
             Processa o retorno do Google OAuth 2.0 após a autenticação.
             </summary>
@@ -205,7 +272,7 @@
             <response code="400">Código de autorização inválido.</response>
             <response code="401">Falha na autenticação do usuário.</response>
         </member>
-        <member name="M:Template.Api.Controllers.Identity.Auth.AuthController.GoogleLogin(Template.Application.Common.Interfaces.Services.IGoogle,System.Threading.CancellationToken)">
+        <member name="M:Template.Api.Controllers.V1.Identity.Auth.AuthController.GoogleLogin(Template.Application.Common.Interfaces.Services.IGoogle,System.Threading.CancellationToken)">
             <summary>
             Gera o link de login para autenticação no Google.
             </summary>
@@ -221,7 +288,14 @@
             <response code="200">URL gerada com sucesso.</response>
             <response code="400">Erro ao gerar URL de autenticação.</response>
         </member>
-        <member name="M:Template.Api.Controllers.Identity.Users.UsersController.CreateUserAsync(Template.Application.Common.Behaviours.IHandlerBase{Template.Application.Domains.Identity.Users.Commands.CreateUsers.CreateUserCommand,Template.Application.Common.Models.User},Template.Application.Domains.Identity.Users.Commands.CreateUsers.CreateUserCommand,System.Threading.CancellationToken)">
+        <member name="M:Template.Api.Controllers.V1.Identity.Auth.AuthController.ResolveTenantId(System.String)">
+            <summary>
+            Determina o Tenant ID a partir do parâmetro 'state' ou do header 'X-Tenant-ID'.
+            </summary>
+            <param name="state">Parâmetro de estado opcional contendo o Tenant ID.</param>
+            <returns>O Tenant ID como um Guid ou Guid.Empty se não encontrado.</returns>
+        </member>
+        <member name="M:Template.Api.Controllers.V1.Identity.Users.UsersController.CreateUserAsync(Template.Application.Common.Behaviours.IHandlerBase{Template.Application.Domains.V1.Identity.Users.Commands.CreateUsers.CreateUserCommand,Template.Application.Common.Models.User},Template.Application.Domains.V1.Identity.Users.Commands.CreateUsers.CreateUserCommand,System.Threading.CancellationToken)">
             <summary>
             Responsável por criar um novo usuário no sistema.
             </summary>
@@ -241,7 +315,7 @@
             <response code="401">O usuário não está autenticado para acessar este recurso.</response>
             <response code="403">O usuário não tem permissão para acessar este recurso.</response>
         </member>
-        <member name="M:Template.Api.Controllers.Identity.Users.UsersController.PolicesAsync(Template.Application.Common.Behaviours.IHandlerBase{Template.Application.Domains.Identity.Users.Queries.GetPolices.GetPolicesQuery,System.Collections.Generic.IEnumerable{Template.Application.ViewModels.Shared.KeyValuePairVM}},System.Threading.CancellationToken)">
+        <member name="M:Template.Api.Controllers.V1.Identity.Users.UsersController.PolicesAsync(Template.Application.Common.Behaviours.IHandlerBase{Template.Application.Domains.V1.Identity.Users.Queries.GetPolices.GetPolicesQuery,System.Collections.Generic.IEnumerable{Template.Application.ViewModels.Shared.KeyValuePairVM}},System.Threading.CancellationToken)">
             <summary>
             Obtém a lista de políticas de acesso do sistema.
             </summary>
@@ -255,7 +329,7 @@
             <response code="401">O usuário não está autenticado para acessar este recurso.</response>
             <response code="403">O usuário não tem permissão para acessar este recurso.</response>
         </member>
-        <member name="M:Template.Api.Controllers.Identity.Users.UsersController.RolesAsync(Template.Application.Common.Behaviours.IHandlerBase{Template.Application.Domains.Identity.Users.Queries.GetRoles.GetRolesQuery,System.Collections.Generic.IEnumerable{Template.Application.ViewModels.Shared.KeyValuePairVM}},System.Threading.CancellationToken)">
+        <member name="M:Template.Api.Controllers.V1.Identity.Users.UsersController.RolesAsync(Template.Application.Common.Behaviours.IHandlerBase{Template.Application.Domains.V1.Identity.Users.Queries.GetRoles.GetRolesQuery,System.Collections.Generic.IEnumerable{Template.Application.ViewModels.Shared.KeyValuePairVM}},System.Threading.CancellationToken)">
             <summary>
             Obtém a lista de funções disponíveis no sistema.
             </summary>
@@ -269,7 +343,7 @@
             <response code="401">O usuário não está autenticado para acessar este recurso.</response>
             <response code="403">O usuário não tem permissão para acessar este recurso.</response>
         </member>
-        <member name="M:Template.Api.Controllers.Identity.Users.UsersController.EditUserAsync(Template.Application.Common.Behaviours.IHandlerBase{Template.Application.Domains.Identity.Users.Commands.EditUsers.EditUserCommand,Template.Application.Common.Models.User},Template.Application.Domains.Identity.Users.Commands.EditUsers.EditUserCommand,System.Threading.CancellationToken)">
+        <member name="M:Template.Api.Controllers.V1.Identity.Users.UsersController.EditUserAsync(Template.Application.Common.Behaviours.IHandlerBase{Template.Application.Domains.V1.Identity.Users.Commands.EditUsers.EditUserCommand,Template.Application.Common.Models.User},Template.Application.Domains.V1.Identity.Users.Commands.EditUsers.EditUserCommand,System.Threading.CancellationToken)">
             <summary>
             Atualiza as informações de um usuário.
             </summary>
@@ -285,7 +359,7 @@
             <response code="401">O usuário não está autenticado para acessar este recurso.</response>
             <response code="403">O usuário não tem permissão para acessar este recurso.</response>
         </member>
-        <member name="M:Template.Api.Controllers.Identity.Users.UsersController.UsuariosAsync(Template.Application.Common.Behaviours.IHandlerBase{Template.Application.Domains.Identity.Users.Queries.GetAll.GetAllQuery,System.Collections.Generic.IEnumerable{Template.Application.ViewModels.Users.UserVm}},Template.Application.Domains.Identity.Users.Queries.GetAll.GetAllQuery,System.Threading.CancellationToken)">
+        <member name="M:Template.Api.Controllers.V1.Identity.Users.UsersController.UsuariosAsync(Template.Application.Common.Behaviours.IHandlerBase{Template.Application.Domains.V1.Identity.Users.Queries.GetAll.GetAllQuery,System.Collections.Generic.IEnumerable{Template.Application.Domains.V1.ViewModels.Users.UserVm}},Template.Application.Domains.V1.Identity.Users.Queries.GetAll.GetAllQuery,System.Threading.CancellationToken)">
             <summary>
             Lista usuários paginados e filtrados.
             </summary>
@@ -300,7 +374,7 @@
             <response code="401">O usuário não está autenticado para acessar este recurso.</response>
             <response code="403">O usuário não tem permissão para acessar este recurso.</response>
         </member>
-        <member name="M:Template.Api.Controllers.Identity.Users.UsersController.DeleteUserAsync(Template.Application.Common.Behaviours.IHandlerBase{System.Guid,System.String},System.Guid,System.Threading.CancellationToken)">
+        <member name="M:Template.Api.Controllers.V1.Identity.Users.UsersController.DeleteUserAsync(Template.Application.Common.Behaviours.IHandlerBase{Template.Application.Domains.V1.Identity.Users.Commands.DeleteUsers.DeleteUserCommand,System.String},System.Guid,System.Threading.CancellationToken)">
             <summary>
             Deleta um usuário pelo ID.
             </summary>
@@ -315,63 +389,6 @@
             <response code="400">Parâmetros inválidos.</response>
             <response code="401">O usuário não está autenticado para acessar este recurso.</response>
             <response code="403">O usuário não tem permissão para acessar este recurso.</response>
-        </member>
-        <member name="M:Template.Api.Controllers.InternalServices.Tenant.ClientController.CreateClientAsync(Template.Application.Common.Behaviours.IHandlerBase{Template.Application.Domains.InternalServices.Clients.Commands.CreateClient.CreateClientCommand,Template.Application.ViewModels.Clients.ClientVM},Template.Application.Domains.InternalServices.Clients.Commands.CreateClient.CreateClientCommand,System.Threading.CancellationToken)">
-            <summary>
-            Responsável por Registrar um novo cliente.
-            </summary>
-            <param name="handler"></param>
-            <param name="command"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Template.Api.Controllers.InternalServices.Tenant.ClientController.UpdateClientAsync(Template.Application.Common.Behaviours.IHandlerBase{Template.Application.Domains.InternalServices.Clients.Commands.UpdateClient.UpdateClientCommand,Template.Application.ViewModels.Clients.ClientVM},Template.Application.Domains.InternalServices.Clients.Commands.UpdateClient.UpdateClientCommand,System.Threading.CancellationToken)">
-            <summary>
-            Responsável por Editar um cliente.
-            </summary>
-            <param name="handler"></param>
-            <param name="command"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Template.Api.Controllers.InternalServices.Tenant.ClientController.GetAllAsync(Template.Application.Common.Behaviours.IHandlerBase{Template.Application.Domains.InternalServices.Clients.Queries.GetAll.GetAllQuery,System.Collections.Generic.IEnumerable{Template.Application.ViewModels.Clients.ClientVM}},Template.Application.Domains.InternalServices.Clients.Queries.GetAll.GetAllQuery,System.Threading.CancellationToken)">
-            <summary>
-            Responsável por listar todos os clientes.
-            </summary>
-            <param name="handler"></param>
-            <param name="query"></param>
-            <param name="cancellationToken"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Template.Api.Controllers.InternalServices.Tenant.ClientController.DeactivateClientAsync(Template.Application.Common.Behaviours.IHandlerBase{Template.Application.Domains.InternalServices.Clients.Commands.DeactivateClient.DeactivateClientCommand,System.String},Template.Application.Domains.InternalServices.Clients.Commands.DeactivateClient.DeactivateClientCommand,System.Threading.CancellationToken)">
-            <summary>
-            Responsável por desativar um cliente.
-            </summary>
-            <param name="handler"></param>
-            <param name="command"></param>
-            <param name="cancellationToken"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Template.Api.Controllers.InternalServices.Tenant.ClientController.DeleteClientAsync(Template.Application.Common.Behaviours.IHandlerBase{System.Guid,System.String},System.Guid,System.Threading.CancellationToken)">
-            <summary>
-            Responsável por excluir um cliente fisicamente.
-            </summary>
-            <param name="handler"></param>
-            <param name="clientId"></param>
-            <param name="cancellationToken"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Template.Api.Controllers.System.HealthController.HealthCheck">
-            <summary>
-            Verifica a integridade do sistema.
-            </summary>
-            <remarks>
-            Este endpoint retorna um status indicando se a API está operacional.
-            
-            **Regras de negócio:**
-            - Sempre retorna `200 OK` caso o serviço esteja em funcionamento.
-            - Pode ser utilizado para monitoramento de disponibilidade da API.
-            </remarks>
-            <returns>Retorna um status indicando que o sistema está saudável.</returns>
-            <response code="200">O sistema está operacional.</response>
         </member>
     </members>
 </doc>

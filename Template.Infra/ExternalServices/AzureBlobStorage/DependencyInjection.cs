@@ -1,9 +1,8 @@
 ﻿using Azure.Storage.Blobs;
 using Template.Application.Common.Interfaces.Services;
-using Template.Infra.ExternalServices.AzureBlobStorage;
 using Template.Infra.Settings.Configurations;
 
-namespace Template.Infra.ExternalServices.Storage;
+namespace Template.Infra.ExternalServices.AzureBlobStorage;
 
 internal static class DependencyInjection
 {

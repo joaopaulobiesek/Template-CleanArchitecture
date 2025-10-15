@@ -56,7 +56,10 @@ public class ExceptionHandlingMiddleware
                 "Ocorreu um erro interno no servidor. Por favor, tente novamente mais tarde ou consulte o suporte.",
                 statusCode: 500,
                 data: null,
-                erros: null
+                erros: new List<NotificationError>
+                {
+                    new NotificationError("Exception", ex.Message)
+                }
             );
         }
 

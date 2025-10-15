@@ -48,7 +48,7 @@ namespace Template.Infra.ExternalServices.Google
         /// <param name="identity">Serviço de identidade para gerenciamento do login externo.</param>
         /// <param name="code">Código de autorização recebido do Google após o redirecionamento.</param>
         /// <returns>Resultado indicando sucesso ou erro durante o processo de autenticação.</returns>
-        public async Task<ApiResponse<string>> AuthenticateUserAsync(IIdentityService identity, string code)
+        public async Task<ApiResponse<string>> AuthenticateUserAsync(IIdentityService identity, string code, Guid xTenantID)
         {
             if (!_isActive)
                 return new ErrorResponse<string>("Authentication service is disabled.");
@@ -81,7 +81,9 @@ namespace Template.Infra.ExternalServices.Google
                 userPayload.JwtId,
                 userPayload.Email,
                 userPayload.Name,
-                userPayload.Picture);
+                userPayload.Picture, 
+                xTenantID
+            );
         }
 
         /// <summary>

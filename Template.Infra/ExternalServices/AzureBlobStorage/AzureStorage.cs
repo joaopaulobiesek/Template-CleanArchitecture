@@ -1,8 +1,8 @@
 ﻿using Azure.Storage.Blobs;
 using Template.Application.Common.Interfaces.Services;
 using Template.Application.Common.Models;
-using Template.Application.ViewModels.Storage;
 using Microsoft.AspNetCore.Http;
+using Template.Application.Domains.V1.ViewModels.Storage;
 using Azure.Storage.Sas;
 using Azure;
 using Azure.Storage.Blobs.Models;

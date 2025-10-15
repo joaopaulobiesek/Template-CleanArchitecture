@@ -1,4 +1,6 @@
 ﻿using Template.Domain.Validations;
+using System.Globalization;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Template.Domain;
@@ -37,7 +39,7 @@ public static class StringFormatter
         cpfOrCnpj.Length == 11 ? CPFValidationAttribute.IsValid(cpfOrCnpj)
         : (cpfOrCnpj.Length == 14 ? CNPJValidationAttribute.IsValid(cpfOrCnpj)
         : false);
-    
+
     public static bool IsValidPhoneNumber(string phoneNumber) =>
         phoneNumber.Length == 10 || phoneNumber.Length == 11;
 
@@ -47,4 +49,27 @@ public static class StringFormatter
     //CNPJ null no valida CPF é para saber se o CNPJ é Estrangeiro se for aceita CPF 000.000.000-00
     public static bool IsValidCpf(string cpf, string? cnpj = null) =>
         CPFValidationAttribute.IsValid(cpf, cnpj);
+
+    public static string RemoveSpaces(string input)
+        => string.IsNullOrWhiteSpace(input) ? input : input.Replace(" ", "");
+
+    public static string RemoveAccents(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            return input;
+
+        var normalizedString = input.Normalize(NormalizationForm.FormD);
+        var stringBuilder = new System.Text.StringBuilder();
+
+        foreach (var c in normalizedString)
+        {
+            var unicodeCategory = CharUnicodeInfo.GetUnicodeCategory(c);
+            if (unicodeCategory != UnicodeCategory.NonSpacingMark)
+            {
+                stringBuilder.Append(c);
+            }
+        }
+
+        return stringBuilder.ToString().Normalize(NormalizationForm.FormC);
+    }
 }

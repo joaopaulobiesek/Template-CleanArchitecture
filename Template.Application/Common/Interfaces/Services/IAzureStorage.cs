@@ -1,6 +1,6 @@
 ﻿using Template.Application.Common.Models;
-using Template.Application.ViewModels.Storage;
 using Microsoft.AspNetCore.Http;
+using Template.Application.Domains.V1.ViewModels.Storage;
 
 namespace Template.Application.Common.Interfaces.Services;
 

@@ -1,17 +1,18 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.PlatformAbstractions;
-using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.SwaggerGen;
-using Template.Application.Common.Interfaces.Security;
+﻿using Template.Application.Common.Interfaces.Security;
 using Template.Application.Common.Models;
 using Template.Domain.Constants;
+using Template.Infra.ExternalServices.AzureBlobStorage;
 using Template.Infra.ExternalServices.Google;
 using Template.Infra.ExternalServices.SendEmails;
-using Template.Infra.ExternalServices.Storage;
 using Template.Infra.Persistence;
 using Template.Infra.Persistence.Contexts;
 using Template.Infra.Persistence.Repositories;
 using Template.Infra.Settings.Configurations;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.PlatformAbstractions;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Template.Infra;
 
@@ -34,36 +35,36 @@ public static class DependencyInjection
 
         services.AddHttpClient();
 
-        services
-            .AddDefaultIdentity<ContextUser>(o =>
-            {
-                o.Password.RequireDigit = false;
-                o.Password.RequireLowercase = false;
-                o.Password.RequireUppercase = false;
-                o.Password.RequiredLength = 3;
-                o.Password.RequireNonAlphanumeric = false;
-            })
-            .AddRoles<ContextRole>()
-            .AddErrorDescriber<IdentityPortugueseMessages>()
-            .AddEntityFrameworkStores<Context>();
-
         services.AddMemoryCache();
         services.AddRepository();
         services.AdicionarSendGrid(config);
         services.AddGoogleAPI(config);
         services.AdicionarStorage(config);
 
-        services.AddTransient<IIdentityService, IdentityService>();
+        services.AddScoped<IIdentityService>(provider =>
+        {
+            var httpContextAccessor = provider.GetRequiredService<IHttpContextAccessor>();
+
+            return new IdentityService(provider.GetRequiredService<UserManager<ContextUser>>(),
+                provider.GetRequiredService<ITokenService>());
+        });
+
+        services.AddScoped(provider =>
+        {
+            var httpContextAccessor = provider.GetRequiredService<IHttpContextAccessor>();
+
+            return new DatabaseInitializer(provider.GetRequiredService<UserManager<ContextUser>>(), provider.GetRequiredService<RoleManager<ContextRole>>(), provider.GetRequiredService<IConfiguration>(), httpContextAccessor);
+        });
+
         services.AddScoped<ITokenService, TokenService>();
+
         AdicionarJwt(services, jwtConfigration);
 
         return services;
     }
 
-    private static void AdicionarJwt(IServiceCollection services, JwtConfiguration jwtConfigration)
+    private static void AdicionarJwt(IServiceCollection services, JwtConfiguration jwtConfiguration)
     {
-        var key = Encoding.ASCII.GetBytes(jwtConfigration.Secret!);
-
         services.AddAuthentication(authentication =>
         {
             authentication.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -75,11 +76,10 @@ public static class DependencyInjection
             x.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(key),
                 ValidateIssuer = true,
                 ValidateAudience = true,
-                ValidIssuer = jwtConfigration.Issuer,
-                ValidAudience = jwtConfigration.Audience,
+                ValidIssuer = jwtConfiguration.Issuer,
+                ValidAudience = jwtConfiguration.Audience,
                 ClockSkew = TimeSpan.Zero
             };
         });
@@ -114,7 +114,7 @@ public static class DependencyInjection
     {
         services.AddSwaggerGen(delegate (SwaggerGenOptions c)
         {
-            c.SwaggerDoc("v1", new OpenApiInfo
+            c.SwaggerDoc("Tenant.Api.v1", new OpenApiInfo
             {
                 Title = "Template.API",
                 Version = "v" + version,

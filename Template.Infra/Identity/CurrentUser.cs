@@ -13,4 +13,12 @@ public class CurrentUser : ICurrentUser
     }
 
     public string? Id => _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+        
+    public string? GroupName
+    {
+        get
+        {
+            return _httpContextAccessor.HttpContext?.Items["GroupName"]?.ToString();
+        }
+    }
 }
