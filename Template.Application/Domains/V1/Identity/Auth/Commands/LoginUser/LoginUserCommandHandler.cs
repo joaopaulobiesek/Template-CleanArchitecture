@@ -21,17 +21,22 @@ public class LoginUserCommandHandler : HandlerBase<LoginUserCommand, LoginUserVm
     {
         var user = await _service.LoginAsync(request.Email, request.Password);
 
+        if (string.IsNullOrEmpty(user.Item4))
+            return new ErrorResponse<LoginUserVm>("Senha ou email inválido!");
+
+        var roles = await _service.GetUserRole(user.Item4);
+        var policies = await _service.GetUserPolicies(user.Item4);
+
+        // Módulos removidos - Client/ClientModule desabilitados
         var modules = new List<string>();
-        if (!string.IsNullOrEmpty(this._user.Id))
-        {
-            modules = await _repositoryClient.GetActiveModulesAsync(this._user.Id);
-        }
 
         var userVm = new LoginUserVm
         {
             Name = user.Item1,
             Email = user.Item2,
             Modules = modules,
+            Roles = roles,
+            Policies = policies,
             Token = user.Item3
         };
 

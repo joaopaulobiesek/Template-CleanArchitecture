@@ -19,19 +19,19 @@ public class IdentityService : IIdentityService
         _tokenService = tokenService;
     }
 
-    public async Task<(string, string, string)> LoginAsync(string emailUserName, string password)
+    public async Task<(string, string, string, string)> LoginAsync(string emailUserName, string password)
     {
         var user = await SearchUserAsync(emailUserName);
 
         if (user is null)
-            return (string.Empty, string.Empty, string.Empty);
+            return (string.Empty, string.Empty, string.Empty, string.Empty);
 
         var checkPassword = await _userManager.CheckPasswordAsync(user, password);
 
         if (!checkPassword)
-            return (string.Empty, string.Empty, string.Empty);
+            return (string.Empty, string.Empty, string.Empty, string.Empty);
 
-        return (user.FullName, user.Email, await GenerateTokensAndUpdateUserAsync(user))!;
+        return (user.FullName, user.Email, await GenerateTokensAndUpdateUserAsync(user), user.Id)!;
     }
 
     public async Task<string?> GetUserNameAsync(string userId)
@@ -48,6 +48,7 @@ public class IdentityService : IIdentityService
             FullName = user.FullName,
             UserName = user.Email,
             Email = user.Email,
+            PhoneNumber = user.PhoneNumber,
             ProfileImageUrl = user.ProfileImageUrl,
         };
 
@@ -252,30 +253,38 @@ public class IdentityService : IIdentityService
             .ToList();
     }
 
-    public async Task<ApiResponse<string>> HandleExternalLoginAsync(string provider, string providerKey, string email, string name, string? picture, Guid xTenantID)
+    public async Task<ApiResponse<LoginGoogleResponse>> HandleExternalLoginAsync(string provider, string providerKey, string email, string name, string? phoneNumber, string? picture, string? state)
     {
         var user = await _userManager.FindByLoginAsync(provider, providerKey);
         if (user != null)
-            return new SuccessResponse<string>("Login with external provider succeeded.", await GenerateTokensAndUpdateUserAsync(user!));
+        {
+            var responseResult = new LoginGoogleResponse
+            {
+                UserId = user.Id,
+                Token = await GenerateTokensAndUpdateUserAsync(user)
+            };
+            return new SuccessResponse<LoginGoogleResponse>("Login with external provider succeeded.", responseResult);
+        }
 
         user = await SearchUserAsync(email);
 
         if (user == null)
         {
             var roles = new List<string> { Roles.User };
-            var policies = new List<string> { Policies.CanList, Policies.CanView };
+            var policies = new List<string> { Policies.CanList, Policies.CanView, Policies.CanCreate, Policies.CanEdit, Policies.CanDelete, Policies.CanViewReports };
 
             user = new ContextUser
             {
                 UserName = email,
                 Email = email,
                 FullName = name,
+                PhoneNumber = phoneNumber,
                 ProfileImageUrl = picture,
             };
 
             var createResult = await _userManager.CreateAsync(user);
             if (!createResult.Succeeded)
-                return new ErrorResponse<string>(
+                return new ErrorResponse<LoginGoogleResponse>(
                     "Failed to create user.",
                     400,
                     null,
@@ -286,7 +295,7 @@ public class IdentityService : IIdentityService
 
             var createRolesResult = await _userManager.AddToRolesAsync(user!, roles);
             if (!createRolesResult.Succeeded)
-                return new ErrorResponse<string>(
+                return new ErrorResponse<LoginGoogleResponse>(
                     "Failed to assign roles to user.",
                     400,
                     null,
@@ -298,7 +307,7 @@ public class IdentityService : IIdentityService
             {
                 var addClaimsResult = await _userManager.AddClaimsAsync(user!, claims);
                 if (!addClaimsResult.Succeeded)
-                    return new ErrorResponse<string>(
+                    return new ErrorResponse<LoginGoogleResponse>(
                         "Failed to add claims to user.",
                         400,
                         null,
@@ -310,7 +319,7 @@ public class IdentityService : IIdentityService
         var addLoginResult = await _userManager.AddLoginAsync(user!, new UserLoginInfo(provider, providerKey, provider));
         if (!addLoginResult.Succeeded)
         {
-            return new ErrorResponse<string>(
+            return new ErrorResponse<LoginGoogleResponse>(
                 "Failed to associate external login with user.",
                 400,
                 null,
@@ -318,7 +327,13 @@ public class IdentityService : IIdentityService
             );
         }
 
-        return new SuccessResponse<string>("External login successfully associated with user.", await GenerateTokensAndUpdateUserAsync(user!));
+        var response = new LoginGoogleResponse
+        {
+            UserId = user!.Id,
+            Token = await GenerateTokensAndUpdateUserAsync(user)
+        };
+
+        return new SuccessResponse<LoginGoogleResponse>("External login successfully associated with user.", response);
     }
 
     public async Task<ApiResponse<string>> AddLoginProviderTokenAsync(string providerKey, string loginProvider, string tokenName, string tokenValue)

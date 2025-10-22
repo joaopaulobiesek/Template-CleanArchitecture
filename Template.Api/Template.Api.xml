@@ -288,12 +288,48 @@
             <response code="200">URL gerada com sucesso.</response>
             <response code="400">Erro ao gerar URL de autenticação.</response>
         </member>
-        <member name="M:Template.Api.Controllers.V1.Identity.Auth.AuthController.ResolveTenantId(System.String)">
+        <member name="M:Template.Api.Controllers.V1.Identity.Auth.AuthController.RegisterAsync(Template.Application.Common.Behaviours.IHandlerBase{Template.Application.Domains.V1.Identity.Auth.Commands.Register.RegisterCommand,Template.Application.Domains.V1.ViewModels.Users.LoginUserVm},Template.Application.Domains.V1.Identity.Auth.Commands.Register.RegisterCommand,System.Threading.CancellationToken)">
+             <summary>
+             Registra um novo usuário usando um código de convite.
+             </summary>
+             <remarks>
+             Este endpoint permite que novos usuários se cadastrem no sistema usando um código de convite válido.
+            
+             **Regras de negócio:**
+             - O código de convite deve existir, estar ativo e não ter expirado.
+             - O código não pode ter atingido o número máximo de usos.
+             - O usuário é criado com a role "USER" automaticamente.
+             - Após o registro, o usuário é automaticamente autenticado e recebe um token JWT.
+             - O código de convite tem seu contador de usos incrementado.
+             </remarks>
+             <param name="handler">Handler responsável pelo processamento do registro.</param>
+             <param name="command">Os parâmetros necessários para registro (nome, email, telefone, senha e código de convite).</param>
+             <param name="cancellationToken">Token de cancelamento da requisição.</param>
+             <returns>Os detalhes do usuário autenticado com o token gerado.</returns>
+             <response code="200">Usuário registrado e autenticado com sucesso.</response>
+             <response code="400">Parâmetros inválidos ou código de convite inválido.</response>
+             <response code="404">Código de convite não encontrado.</response>
+        </member>
+        <member name="M:Template.Api.Controllers.V1.Identity.Auth.AuthController.Logout">
+             <summary>
+             Realiza o logout do usuário, removendo o cookie de autenticação.
+             </summary>
+             <remarks>
+             Este endpoint remove o cookie HTTP-Only que contém o token JWT, efetivamente deslogando o usuário.
+            
+             **Regras de negócio:**
+             - O usuário deve estar autenticado para fazer logout.
+             - O cookie é expirado imediatamente (data no passado).
+             - O token JWT continua tecnicamente válido até expirar, mas o navegador não o envia mais.
+             </remarks>
+             <returns>Mensagem de sucesso.</returns>
+             <response code="200">Logout realizado com sucesso.</response>
+             <response code="401">Usuário não autenticado.</response>
+        </member>
+        <member name="M:Template.Api.Controllers.V1.Identity.Auth.AuthController.SetAuthCookie(System.String)">
             <summary>
-            Determina o Tenant ID a partir do parâmetro 'state' ou do header 'X-Tenant-ID'.
+            Define o cookie HTTP-Only para autenticação JWT.
             </summary>
-            <param name="state">Parâmetro de estado opcional contendo o Tenant ID.</param>
-            <returns>O Tenant ID como um Guid ou Guid.Empty se não encontrado.</returns>
         </member>
         <member name="M:Template.Api.Controllers.V1.Identity.Users.UsersController.CreateUserAsync(Template.Application.Common.Behaviours.IHandlerBase{Template.Application.Domains.V1.Identity.Users.Commands.CreateUsers.CreateUserCommand,Template.Application.Common.Models.User},Template.Application.Domains.V1.Identity.Users.Commands.CreateUsers.CreateUserCommand,System.Threading.CancellationToken)">
             <summary>
@@ -389,6 +425,12 @@
             <response code="400">Parâmetros inválidos.</response>
             <response code="401">O usuário não está autenticado para acessar este recurso.</response>
             <response code="403">O usuário não tem permissão para acessar este recurso.</response>
+        </member>
+        <member name="T:Template.Api.Middlewares.HangfireAuthorizationFilter">
+            <summary>
+            Filtro de autorização para Hangfire Dashboard.
+            Permite acesso apenas para usuários autenticados com role ADMIN.
+            </summary>
         </member>
     </members>
 </doc>

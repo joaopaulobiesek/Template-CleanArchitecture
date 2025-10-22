@@ -1,11 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Template.Api.Controllers.System;
 using Template.Application.Common.Behaviours;
 using Template.Application.Common.Interfaces.Security;
 using Template.Application.Common.Interfaces.Services;
 using Template.Application.Common.Models;
 using Template.Application.Domains.V1.Identity.Auth.Commands.LoginUser;
+using Template.Application.Domains.V1.Identity.Auth.Commands.Register;
 using Template.Application.Domains.V1.ViewModels.Users;
+using Template.Infra.Settings.Configurations;
 
 namespace Template.Api.Controllers.V1.Identity.Auth;
 
@@ -16,6 +19,12 @@ namespace Template.Api.Controllers.V1.Identity.Auth;
 [Route("api/v1/[controller]")]
 public class AuthController : BaseController
 {
+    private readonly JwtConfiguration _jwtConfig;
+
+    public AuthController(IOptions<JwtConfiguration> jwtConfig)
+    {
+        _jwtConfig = jwtConfig.Value;
+    }
     /// <summary>
     /// Realiza a autenticação do usuário no sistema.
     /// </summary>
@@ -61,7 +70,11 @@ public class AuthController : BaseController
         else if (string.IsNullOrEmpty(response.Data!.Token))
             return Unauthorized();
         else
+        {
+            // Define cookie HTTP-Only com o token JWT
+            SetAuthCookie(response.Data.Token);
             return Ok(response);
+        }
     }
 
     /// <summary>
@@ -84,7 +97,7 @@ public class AuthController : BaseController
     /// <response code="400">Código de autorização inválido.</response>
     /// <response code="401">Falha na autenticação do usuário.</response>
     [HttpGet("Google/Callback")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SuccessResponse<string>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SuccessResponse<LoginUserVm>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse<string>))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse<string>))]
     public async Task<IActionResult> GoogleCallback(
@@ -93,7 +106,17 @@ public class AuthController : BaseController
         string code,
         string? state,
         CancellationToken cancellationToken)
-        => HandleResponse(await google.AuthenticateUserAsync(service, code, ResolveTenantId(state)));
+    {
+        var result = await google.AuthenticateUserAsync(service, code, state);
+
+        // Se autenticação bem-sucedida, define cookie HTTP-Only
+        if (result.Success && !string.IsNullOrEmpty(result.Data?.Token))
+        {
+            SetAuthCookie(result.Data.Token);
+        }
+
+        return HandleResponse(result);
+    }
 
     /// <summary>
     /// Gera o link de login para autenticação no Google.
@@ -115,26 +138,103 @@ public class AuthController : BaseController
     public async Task<IActionResult> GoogleLogin(
         [FromServices] IGoogle google,
         CancellationToken cancellationToken)
-        => HandleResponse(google.GenerateAuthenticationUrl(ResolveTenantId(null).ToString()));
+        => HandleResponse(google.GenerateAuthenticationUrl(Guid.Empty.ToString()));
 
     /// <summary>
-    /// Determina o Tenant ID a partir do parâmetro 'state' ou do header 'X-Tenant-ID'.
+    /// Registra um novo usuário usando um código de convite.
     /// </summary>
-    /// <param name="state">Parâmetro de estado opcional contendo o Tenant ID.</param>
-    /// <returns>O Tenant ID como um Guid ou Guid.Empty se não encontrado.</returns>
-    private Guid ResolveTenantId(string? state)
+    /// <remarks>
+    /// Este endpoint permite que novos usuários se cadastrem no sistema usando um código de convite válido.
+    ///
+    /// **Regras de negócio:**
+    /// - O código de convite deve existir, estar ativo e não ter expirado.
+    /// - O código não pode ter atingido o número máximo de usos.
+    /// - O usuário é criado com a role "USER" automaticamente.
+    /// - Após o registro, o usuário é automaticamente autenticado e recebe um token JWT.
+    /// - O código de convite tem seu contador de usos incrementado.
+    /// </remarks>
+    /// <param name="handler">Handler responsável pelo processamento do registro.</param>
+    /// <param name="command">Os parâmetros necessários para registro (nome, email, telefone, senha e código de convite).</param>
+    /// <param name="cancellationToken">Token de cancelamento da requisição.</param>
+    /// <returns>Os detalhes do usuário autenticado com o token gerado.</returns>
+    /// <response code="200">Usuário registrado e autenticado com sucesso.</response>
+    /// <response code="400">Parâmetros inválidos ou código de convite inválido.</response>
+    /// <response code="404">Código de convite não encontrado.</response>
+    [HttpPost("Register")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SuccessResponse<LoginUserVm>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse<string>))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse<string>))]
+    public async Task<IActionResult> RegisterAsync(
+        [FromServices] IHandlerBase<RegisterCommand, LoginUserVm> handler,
+        [FromBody] RegisterCommand command,
+        CancellationToken cancellationToken)
     {
-        if (!string.IsNullOrEmpty(state) && Guid.TryParse(state, out var stateTenantId))
+        var response = await handler.Execute(command, cancellationToken);
+
+        if (!response.Success)
         {
-            return stateTenantId;
+            if (response.StatusCode == 404)
+                return NotFound(response);
+
+            return BadRequest(response);
         }
 
-        var tenantIdHeader = HttpContext?.Request.Headers["X-Tenant-ID"].ToString();
-        if (!string.IsNullOrEmpty(tenantIdHeader) && Guid.TryParse(tenantIdHeader, out var headerTenantId))
+        // Define cookie HTTP-Only após registro bem-sucedido
+        if (!string.IsNullOrEmpty(response.Data?.Token))
         {
-            return headerTenantId;
+            SetAuthCookie(response.Data.Token);
         }
 
-        return Guid.Empty;
+        return Ok(response);
+    }
+
+    /// <summary>
+    /// Realiza o logout do usuário, removendo o cookie de autenticação.
+    /// </summary>
+    /// <remarks>
+    /// Este endpoint remove o cookie HTTP-Only que contém o token JWT, efetivamente deslogando o usuário.
+    ///
+    /// **Regras de negócio:**
+    /// - O usuário deve estar autenticado para fazer logout.
+    /// - O cookie é expirado imediatamente (data no passado).
+    /// - O token JWT continua tecnicamente válido até expirar, mas o navegador não o envia mais.
+    /// </remarks>
+    /// <returns>Mensagem de sucesso.</returns>
+    /// <response code="200">Logout realizado com sucesso.</response>
+    /// <response code="401">Usuário não autenticado.</response>
+    [HttpPost("Logout")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SuccessResponse<string>))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public IActionResult Logout()
+    {
+        // Remove o cookie de autenticação
+        var isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
+        Response.Cookies.Delete("auth_token", new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = isDevelopment ? SameSiteMode.None : SameSiteMode.Lax,             // Consistente com SetAuthCookie
+            Path = "/"                                // Mesmo Path usado no Set
+        });
+
+        return Ok(new SuccessResponse<string>("Logout realizado com sucesso"));
+    }
+
+    /// <summary>
+    /// Define o cookie HTTP-Only para autenticação JWT.
+    /// </summary>
+    private void SetAuthCookie(string token)
+    {
+        var isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,                          // JavaScript não consegue acessar (proteção XSS)
+            Secure = true,                            // Apenas HTTPS em produção
+            SameSite = isDevelopment ? SameSiteMode.None : SameSiteMode.Lax,             // Funciona em modo anônimo (recomendação Google/Facebook)
+            Path = "/",                               // Cookie enviado em todas as rotas
+            MaxAge = TimeSpan.FromMinutes(_jwtConfig.ExpiracaoEmMinutos)  // Mais confiável que Expires
+        };
+
+        Response.Cookies.Append("auth_token", token, cookieOptions);
     }
 }

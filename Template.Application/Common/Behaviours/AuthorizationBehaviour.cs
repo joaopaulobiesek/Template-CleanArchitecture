@@ -27,6 +27,17 @@ public class AuthorizationBehaviour<TRequest, TResponse> where TResponse : notnu
 
         if (authorizeAttributes.Any())
         {
+            // BYPASS: Serviços internos confiáveis (ex: WhatsApp) podem pular autorização
+            if (InternalAuthContext.IsTrusted())
+            {
+                // Log opcional para auditoria
+                if (_environment.IsDevelopment())
+                {
+                    Console.WriteLine($"[AuthorizationBehaviour] Bypass autorizado para serviço interno: {request.GetType().Name}");
+                }
+                return await executeCore();
+            }
+
             if (_user.Id == null)
             {
                 throw new UnauthorizedAccessException();

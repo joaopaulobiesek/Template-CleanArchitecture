@@ -1,6 +1,12 @@
-﻿using Template.Application.Common.Interfaces.Security;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.PlatformAbstractions;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
+using Template.Application.Common.Interfaces.Security;
 using Template.Application.Common.Models;
 using Template.Domain.Constants;
+using Template.Infra.BackgroundJobs;
 using Template.Infra.ExternalServices.AzureBlobStorage;
 using Template.Infra.ExternalServices.Google;
 using Template.Infra.ExternalServices.SendEmails;
@@ -8,11 +14,6 @@ using Template.Infra.Persistence;
 using Template.Infra.Persistence.Contexts;
 using Template.Infra.Persistence.Repositories;
 using Template.Infra.Settings.Configurations;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.PlatformAbstractions;
-using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Template.Infra;
 
@@ -40,6 +41,7 @@ public static class DependencyInjection
         services.AdicionarSendGrid(config);
         services.AddGoogleAPI(config);
         services.AdicionarStorage(config);
+        services.AddHangfireJobs(config); // Hangfire Background Jobs
 
         services.AddScoped<IIdentityService>(provider =>
         {
@@ -81,6 +83,21 @@ public static class DependencyInjection
                 ValidIssuer = jwtConfiguration.Issuer,
                 ValidAudience = jwtConfiguration.Audience,
                 ClockSkew = TimeSpan.Zero
+            };
+
+            x.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    // Lê o token do cookie se não estiver no header Authorization
+                    if (string.IsNullOrEmpty(context.Token))
+                    {
+                        context.Token = context.Request.Cookies["auth_token"];
+                    }
+
+                    context.Options.TokenValidationParameters.IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtConfiguration.Secret));
+                    return Task.CompletedTask;
+                }
             };
         });
 

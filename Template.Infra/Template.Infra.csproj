@@ -3,6 +3,8 @@
 	<ItemGroup>
 		<PackageReference Include="Azure.Storage.Blobs" Version="12.22.2" />
 		<PackageReference Include="Google.Apis.Auth" Version="1.68.0" />
+		<PackageReference Include="Hangfire.AspNetCore" Version="1.8.17" />
+		<PackageReference Include="Hangfire.SqlServer" Version="1.8.17" />
 		<PackageReference Include="Microsoft.Azure.CognitiveServices.Vision.CustomVision.Training" Version="2.0.0" />
 		<PackageReference Include="Dapper" Version="2.1.35" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.10" />

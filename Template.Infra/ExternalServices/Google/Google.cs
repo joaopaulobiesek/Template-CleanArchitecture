@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 using Template.Application.Common.Interfaces.Security;
 using Template.Application.Common.Interfaces.Services;
 using Template.Application.Common.Models;
+using Template.Application.Domains.V1.ViewModels.Users;
 using Template.Infra.Settings.Configurations;
 
 namespace Template.Infra.ExternalServices.Google
@@ -48,18 +49,18 @@ namespace Template.Infra.ExternalServices.Google
         /// <param name="identity">Serviço de identidade para gerenciamento do login externo.</param>
         /// <param name="code">Código de autorização recebido do Google após o redirecionamento.</param>
         /// <returns>Resultado indicando sucesso ou erro durante o processo de autenticação.</returns>
-        public async Task<ApiResponse<string>> AuthenticateUserAsync(IIdentityService identity, string code, Guid xTenantID)
+        public async Task<ApiResponse<LoginUserVm>> AuthenticateUserAsync(IIdentityService identity, string code, string? state)
         {
             if (!_isActive)
-                return new ErrorResponse<string>("Authentication service is disabled.");
+                return new ErrorResponse<LoginUserVm>("Authentication service is disabled.");
 
             if (string.IsNullOrEmpty(code))
-                return new ErrorResponse<string>("Authorization code not received.");
+                return new ErrorResponse<LoginUserVm>("Authorization code not received.");
 
             var token = await ExchangeAuthorizationCodeForTokenAsync(code);
 
             if (token == null)
-                return new ErrorResponse<string>("Failed to generate Google token.");
+                return new ErrorResponse<LoginUserVm>("Failed to generate Google token.");
 
             var userPayload = await ValidateTokenAsync(token.IdToken);
 
@@ -76,14 +77,34 @@ namespace Template.Infra.ExternalServices.Google
                 token.AccessToken
             );
 
-            return await identity.HandleExternalLoginAsync(
-                _provider,
-                userPayload.JwtId,
-                userPayload.Email,
-                userPayload.Name,
-                userPayload.Picture, 
-                xTenantID
-            );
+            var result = await identity.HandleExternalLoginAsync(
+               _provider,
+               userPayload.JwtId,
+               userPayload.Email,
+               userPayload.Name,
+               null,
+               userPayload.Picture,
+               state
+           );
+
+            if (!result.Success)
+                return new ErrorResponse<LoginUserVm>("Failed to external login.");
+
+            var roles = await identity.GetUserRole(result.Data!.UserId);
+
+            var policies = await identity.GetUserPolicies(result.Data!.UserId);
+
+            var userVm = new LoginUserVm
+            {
+                Name = userPayload.Name,
+                Email = userPayload.Email,
+                Modules = new List<string>(),
+                Roles = roles,
+                Policies = policies,
+                Token = result.Data!.Token,
+            };
+
+            return new SuccessResponse<LoginUserVm>("User authenticated successfully!", userVm);
         }
 
         /// <summary>
