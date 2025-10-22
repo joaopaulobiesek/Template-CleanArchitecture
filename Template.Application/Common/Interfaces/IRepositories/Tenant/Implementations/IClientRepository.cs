@@ -5,6 +5,6 @@ namespace Template.Application.Common.Interfaces.IRepositories.Tenant.Implementa
 
 public interface IClientRepository : IRepository<Client>
 {
-    IQueryable<Client> SearchIQueryable(string? src);
+    IQueryable<Client> SearchIQueryable(string? src, Dictionary<string, string>? customFilter = null);
     Task<List<string>> GetActiveModulesAsync(string userId);
 }

@@ -12,13 +12,8 @@ namespace Template.Application.Domains.Tenant.V1.Clients.Queries.GetAll;
 
 [Authorize(Roles = $"{Roles.Admin},{Roles.User}")]
 [Authorize(Policy = $"{CanList},{CanView}")]
-public class GetAllQuery
+public class GetAllQuery : BasePaginatedQuery
 {
-    public int PageNumber { get; set; }
-    public int PageSize { get; set; }
-    public int AscDesc { get; set; }
-    public string? ColumnName { get; set; }
-    public string? SearchText { get; set; }
 }
 
 public class GetAllQueryHandler : HandlerBase<GetAllQuery, IEnumerable<ClientVM>>
@@ -32,11 +27,11 @@ public class GetAllQueryHandler : HandlerBase<GetAllQuery, IEnumerable<ClientVM>
 
     protected override async Task<ApiResponse<IEnumerable<ClientVM>>> RunCore(GetAllQuery request, CancellationToken cancellationToken, object? additionalData = null)
     {
-        var query = _repository.SearchIQueryable(request.SearchText!);
+        var query = _repository.SearchIQueryable(request.Src!, request.GetCustomFilterDictionary());
 
         query = request.AscDesc == -1
             ? query.OrderByDescending(BuscarOrdemPropriedade(request.ColumnName))
-            : query.OrderBy(BuscarOrdemPropriedade(request.ColumnName));
+            : query.OrderBy(BuscarOrdemPropriedade(request.ColumnName));        
 
         var list = await PaginatedList<Client>.CreateAsync(query, request.PageNumber, request.PageSize, cancellationToken);
 

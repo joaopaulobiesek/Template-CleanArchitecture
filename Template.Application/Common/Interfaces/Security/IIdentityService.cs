@@ -12,7 +12,7 @@ public interface IIdentityService
     Task<UserVm> CreateUserAsync(IUser user, string? password);
     Task<UserVm> EditUserAsync(IUser user, string? password);
     Task<ApiResponse<string>> DeleteUserAsync(string userId);
-    IQueryable<UserVm>? ListUsersAsync(int order, string param, string? searchText = null);
+    IQueryable<UserVm>? ListUsersAsync(int order, string param, string? searchText = null, Dictionary<string, string>? customFilter = null);
     Task<List<string>> GetUserRole(string userId);
     Task<List<string>> GetUserPolicies(string userId);
     Task<ApiResponse<LoginGoogleResponse>> HandleExternalLoginAsync(string provider, string providerKey, string email, string name, string? phoneNumber, string? picture, string? state);

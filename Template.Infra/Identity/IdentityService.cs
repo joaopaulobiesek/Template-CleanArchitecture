@@ -3,6 +3,7 @@ using Template.Application.Common.Models;
 using Template.Application.Domains.V1.ViewModels.Users;
 using Template.Domain.Constants;
 using System.Linq.Expressions;
+using Template.Application.Common.Extensions;
 
 namespace Template.Infra.Identity;
 
@@ -205,7 +206,7 @@ public class IdentityService : IIdentityService
         return result.ToApplicationResult();
     }
 
-    public IQueryable<UserVm>? ListUsersAsync(int order, string param, string? searchText = null)
+    public IQueryable<UserVm>? ListUsersAsync(int order, string param, string? searchText = null, Dictionary<string, string>? customFilter = null)
     {
         IQueryable<ContextUser> userQuery = _userManager.Users.AsQueryable();
 
@@ -217,12 +218,27 @@ public class IdentityService : IIdentityService
             );
         }
 
+        // Aplica custom filters COM WHITELIST na entidade ContextUser (ANTES do Select!)
+        if (customFilter != null && customFilter.Any())
+        {
+            var filteredQuery = userQuery.ApplyCustomFiltersWithWhitelist(
+                customFilter,
+                "Email",
+                "PhoneNumber"
+            );
+
+            if (filteredQuery != null)
+                userQuery = filteredQuery;
+        }
+
         if (order == -1)
             userQuery = userQuery.OrderByDescending(SearchOrderProperty(param!));
         else
             userQuery = userQuery.OrderBy(SearchOrderProperty(param!));
 
-        return userQuery.Select(u => new UserVm(u.Id, u.Email, u.FullName, u.ProfileImageUrl, null, null));
+        var vmQuery = userQuery.Select(u => new UserVm(u.Id, u.Email, u.FullName, u.ProfileImageUrl, null, null));
+
+        return vmQuery;
     }
 
     public async Task<List<string>> GetUserRole(string userId)
