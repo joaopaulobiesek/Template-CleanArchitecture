@@ -1,8 +1,8 @@
-# 🏗️ Clean Architecture Multi-Tenancy Template
+# 🏗️ Clean Architecture Template
 
 <div align="center">
 
-**Template moderno de Clean Architecture com DDD, CQRS e Multi-Tenancy para ASP.NET Core**
+**Template moderno de Clean Architecture com DDD, CQRS para ASP.NET Core**
 
 [![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
 [![C#](https://img.shields.io/badge/C%23-12.0-239120?logo=csharp)](https://docs.microsoft.com/en-us/dotnet/csharp/)
