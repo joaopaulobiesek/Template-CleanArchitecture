@@ -1,5 +1,6 @@
-﻿using Template.Application.Common.Interfaces.Security;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
+using Template.Application.Common.Interfaces.Security;
+using Template.Application.Common.Security;
 
 namespace Template.Infra.Identity;
 
@@ -12,8 +13,19 @@ public class CurrentUser : ICurrentUser
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public string? Id => _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
-        
+    public string? Id
+    {
+        get
+        {
+            var internalUserId = InternalAuthContext.GetUserId();
+            if (!string.IsNullOrEmpty(internalUserId))
+                return internalUserId;
+
+            // Se não, busca do HttpContext (requisições HTTP normais)
+            return _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+        }
+    }
+
     public string? GroupName
     {
         get
