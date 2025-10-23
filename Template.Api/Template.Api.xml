@@ -43,6 +43,15 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
+        <member name="M:Template.Api.Controllers.Tenant.V1.Clients.ClientController.GetByIdAsync(Template.Application.Common.Behaviours.IHandlerBase{Template.Application.Domains.Tenant.V1.Clients.Queries.GetById.GetByIdQuery,Template.Application.Domains.Tenant.V1.ViewModels.ClientVM},Template.Application.Domains.Tenant.V1.Clients.Queries.GetById.GetByIdQuery,System.Threading.CancellationToken)">
+            <summary>
+            Responsável por listar todos os clientes.
+            </summary>
+            <param name="handler"></param>
+            <param name="query"></param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
         <member name="M:Template.Api.Controllers.Tenant.V1.Clients.ClientController.DeactivateClientAsync(Template.Application.Common.Behaviours.IHandlerBase{Template.Application.Domains.Tenant.V1.Clients.Commands.DeactivateClient.DeactivateClientCommand,System.String},Template.Application.Domains.Tenant.V1.Clients.Commands.DeactivateClient.DeactivateClientCommand,System.Threading.CancellationToken)">
             <summary>
             Responsável por desativar um cliente.

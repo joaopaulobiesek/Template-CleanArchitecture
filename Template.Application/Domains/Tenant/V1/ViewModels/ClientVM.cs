@@ -1,4 +1,6 @@
-﻿namespace Template.Application.Domains.Tenant.V1.ViewModels;
+﻿using Template.Domain.Entity.Tenant;
+
+namespace Template.Application.Domains.Tenant.V1.ViewModels;
 
 public class ClientVM
 {
@@ -20,4 +22,16 @@ public class ClientVM
         ZipCode = zipCode;
         Paid = paid;
     }
+
+    public static ClientVM FromEntity(Client client)
+    => new ClientVM
+    {
+        Id = client.Id,
+        FullName = client.FullName,
+        DocumentNumber = client.DocumentNumber,
+        Phone = client.Phone,
+        ZipCode = client.ZipCode,
+        Paid = client.Paid
+    };
+
 }

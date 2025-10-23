@@ -2,11 +2,12 @@
 using Template.Api.Controllers.System;
 using Template.Application.Common.Behaviours;
 using Template.Application.Common.Models;
-using Template.Application.Domains.Tenant.V1.ViewModels;
 using Template.Application.Domains.Tenant.V1.Clients.Commands.CreateClient;
 using Template.Application.Domains.Tenant.V1.Clients.Commands.DeactivateClient;
 using Template.Application.Domains.Tenant.V1.Clients.Commands.UpdateClient;
 using Template.Application.Domains.Tenant.V1.Clients.Queries.GetAll;
+using Template.Application.Domains.Tenant.V1.Clients.Queries.GetById;
+using Template.Application.Domains.Tenant.V1.ViewModels;
 
 namespace Template.Api.Controllers.Tenant.V1.Clients;
 
@@ -57,6 +58,21 @@ public class ClientController : BaseController
     public async Task<IActionResult> GetAllAsync(
         [FromServices] IHandlerBase<GetAllQuery, IEnumerable<ClientVM>> handler,
         [FromQuery] GetAllQuery query,
+        CancellationToken cancellationToken)
+        => HandleResponse(await handler.Execute(query, cancellationToken));
+
+    /// <summary>
+    /// Responsável por listar todos os clientes.
+    /// </summary>
+    /// <param name="handler"></param>
+    /// <param name="query"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [HttpGet("GetById")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ClientVM))]
+    public async Task<IActionResult> GetByIdAsync(
+        [FromServices] IHandlerBase<GetByIdQuery, ClientVM> handler,
+        [FromQuery] GetByIdQuery query,
         CancellationToken cancellationToken)
         => HandleResponse(await handler.Execute(query, cancellationToken));
 

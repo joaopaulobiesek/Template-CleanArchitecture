@@ -17,9 +17,7 @@ public class CreateClientCommandHandler : HandlerBase<CreateClientCommand, Clien
 
     protected override async Task<ApiResponse<ClientVM>> RunCore(CreateClientCommand request, CancellationToken cancellationToken, object? additionalData = null)
     {
-       var asd = await _storage.DownloadFile("");
-
-        /*var checkClient = await _context.Clients.FirstOrDefaultAsync(x =>
+        var checkClient = await _context.Clients.FirstOrDefaultAsync(x =>
                     x.DocumentNumber.Replace(".", "").Replace("/", "").Replace("-", "")
                     .Contains(StringFormatter.RemoveNonNumericCharacters(request.DocumentNumber)),
                 cancellationToken);
@@ -31,9 +29,9 @@ public class CreateClientCommandHandler : HandlerBase<CreateClientCommand, Clien
 
         client.CreateClient(request);
 
-        await _tenantContext.Clients.AddAsync(client);
+        await _context.Clients.AddAsync(client);
 
-        await _tenantContext.SaveChangesAsync(cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
 
         return new SuccessResponse<ClientVM>(
             "Cadastro efetuado com sucesso.",
@@ -45,9 +43,6 @@ public class CreateClientCommandHandler : HandlerBase<CreateClientCommand, Clien
                 client.ZipCode,
                 client.Paid
             )
-        );*/
-
-
-        return new SuccessResponse<ClientVM>("");
+        );
     }
 }
